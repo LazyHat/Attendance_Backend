@@ -14,7 +14,7 @@ fun Application.configureAuth() {
     val audience = environment.config.property("jwt.audience").getString()
     val realm = environment.config.property("jwt.realm").getString()
     install(Authentication) {
-        jwt {
+        jwt("user") {
             this.realm = realm
             verifier(
                 JWT.require(Algorithm.HMAC256(secret))
@@ -23,11 +23,9 @@ fun Application.configureAuth() {
                     .build()
             )
             validate { credential ->
-                if (credential.payload.getClaim("login").asString() != "") {
-                    JWTPrincipal(credential.payload)
-                } else null
+                UserPrincipal.fromPayload(credential.payload.claims)
             }
-            challenge{defaultScheme, realm ->
+            challenge { defaultScheme, realm ->
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
             }
         }

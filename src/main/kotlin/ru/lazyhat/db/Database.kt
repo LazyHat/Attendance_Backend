@@ -28,12 +28,7 @@ fun Application.configureDatabaseModule(): Module {
     }
 }
 
-fun initDatabase(
-    studentsService: StudentsService,
-    qrCodeTokensService: QrCodeTokensService,
-    lessonsService: LessonsService,
-    apiTokensService: ApiTokensService
-) {
+fun initDatabase(studentsService: StudentsService) {
     val scope = CoroutineScope(Dispatchers.IO)
     scope.launch {
         if (studentsService.isEmpty()) {

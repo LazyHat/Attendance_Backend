@@ -14,22 +14,20 @@ import java.io.Closeable
 import java.util.*
 import kotlin.time.Duration.Companion.days
 
-
-@Serializable
-data class ApiToken(val userLogin: String, val access: Access, val token: String, val expires: LocalDateTime) {
-    enum class Access {
-        Student,
-        Teacher
-    }
+enum class Access {
+    Student,
+    Teacher
 }
+@Serializable
+data class ApiToken(val userLogin: String, val access: Access, val token: String, val expires: LocalDateTime)
 
 class ApiTokensService(private val database: Database) : Closeable {
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     private val context = newSingleThreadContext("tokens")
     private val scope = CoroutineScope(context)
 
     private object ApiTokens : Table() {
-        val access = enumeration("access", ApiToken.Access::class)
+        val access = enumeration("access", Access::class)
         val userLogin = varchar("user_login", 50)
         val token = uuid("token").clientDefault { UUID.randomUUID() }
         val expires = datetime("expires").clientDefault {
@@ -56,7 +54,7 @@ class ApiTokensService(private val database: Database) : Closeable {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
 
-    suspend fun create(login: String, access: ApiToken.Access): ApiToken = dbQuery {
+    suspend fun create(login: String, access: Access): ApiToken = dbQuery {
         if (ApiTokens.select { ApiTokens.userLogin eq login }.singleOrNull() != null) {
             delete(login, access)
         }
@@ -79,7 +77,7 @@ class ApiTokensService(private val database: Database) : Closeable {
         }
     }
 
-    suspend fun delete(login: String, access: ApiToken.Access) {
+    suspend fun delete(login: String, access: Access) {
         dbQuery {
             ApiTokens.deleteWhere { (userLogin eq login) and (ApiTokens.access eq access) }
         }
