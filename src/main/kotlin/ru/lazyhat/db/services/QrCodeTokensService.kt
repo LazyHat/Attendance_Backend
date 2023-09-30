@@ -1,4 +1,4 @@
-package ru.lazyhat.plugins.db
+package ru.lazyhat.db.services
 
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
@@ -16,14 +16,14 @@ import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 @Serializable
-data class Token(val id: String, val lessonId: Int, val expires: LocalDateTime)
+data class QrCodeToken(val id: String, val lessonId: Int, val expires: LocalDateTime)
 
-class TokensService(private val database: Database) : Closeable {
+class QrCodeTokensService(private val database: Database) : Closeable {
     @OptIn(DelicateCoroutinesApi::class)
     private val context = newSingleThreadContext("tokens")
     private val scope = CoroutineScope(context)
 
-    object Tokens : Table() {
+    object QrCodeTokens : Table() {
         val id = uuid("id").clientDefault { UUID.randomUUID() }
         val lessonId = integer("lesson_id")
         val expires =
@@ -37,7 +37,7 @@ class TokensService(private val database: Database) : Closeable {
 
     init {
         transaction(database) {
-            SchemaUtils.create(Tokens)
+            SchemaUtils.create(QrCodeTokens)
         }
         scope.launch {
             while (true) {
@@ -51,29 +51,29 @@ class TokensService(private val database: Database) : Closeable {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     private fun UpdateBuilder<Int>.update(lessonId: Int) {
-        set(Tokens.lessonId, lessonId)
+        set(QrCodeTokens.lessonId, lessonId)
     }
 
-    suspend fun create(lessonId: Int): Token = dbQuery {
-        if (Tokens.select { Tokens.lessonId eq lessonId }.singleOrNull() != null) {
+    suspend fun create(lessonId: Int): QrCodeToken = dbQuery {
+        if (QrCodeTokens.select { QrCodeTokens.lessonId eq lessonId }.singleOrNull() != null) {
             delete(lessonId)
         }
-        Tokens.insert {
+        QrCodeTokens.insert {
             it.update(lessonId)
         }.let {
-            Token(it[Tokens.id].toString(), it[Tokens.lessonId], it[Tokens.expires])
+            QrCodeToken(it[QrCodeTokens.id].toString(), it[QrCodeTokens.lessonId], it[QrCodeTokens.expires])
         }
     }
 
-    suspend fun read(id: String): Token? = dbQuery {
-        Tokens.select { Tokens.id eq UUID.fromString(id) }.singleOrNull()?.let {
-            Token(it[Tokens.id].toString(), it[Tokens.lessonId], it[Tokens.expires])
+    suspend fun read(id: String): QrCodeToken? = dbQuery {
+        QrCodeTokens.select { QrCodeTokens.id eq UUID.fromString(id) }.singleOrNull()?.let {
+            QrCodeToken(it[QrCodeTokens.id].toString(), it[QrCodeTokens.lessonId], it[QrCodeTokens.expires])
         }
     }
 
     suspend fun delete(lessonId: Int) {
         dbQuery {
-            Tokens.deleteWhere { Tokens.lessonId.eq(lessonId) }
+            QrCodeTokens.deleteWhere { QrCodeTokens.lessonId.eq(lessonId) }
         }
     }
 
@@ -83,7 +83,7 @@ class TokensService(private val database: Database) : Closeable {
 
     private suspend fun checkTokensIfExpires() {
         dbQuery {
-            Tokens.deleteWhere {
+            QrCodeTokens.deleteWhere {
                 expires less Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             }
         }

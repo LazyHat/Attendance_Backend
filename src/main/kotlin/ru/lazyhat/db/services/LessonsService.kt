@@ -1,4 +1,4 @@
-package ru.lazyhat.plugins.db
+package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.LocalDateTime

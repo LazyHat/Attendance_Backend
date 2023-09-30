@@ -1,9 +1,10 @@
-
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val postgresql_version: String by project
 val datetime_version: String by project
+val koin_version: String by project
+val koin_ktor_version: String by project
 
 val exposed_version: String by project
 val h2_version: String by project
@@ -31,13 +32,20 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
+    implementation("io.ktor:ktor-server-netty-jvm")
+    testImplementation("io.ktor:ktor-server-tests-jvm")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$datetime_version")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
     implementation("org.postgresql:postgresql:$postgresql_version")
-    implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("com.h2database:h2:2.2.224")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("io.ktor:ktor-server-auth")
+    implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("io.insert-koin:koin-core:$koin_version")
+    implementation("io.insert-koin:koin-core-coroutines:$koin_version")
+    implementation("io.insert-koin:koin-ktor:$koin_ktor_version")
+    implementation("io.insert-koin:koin-logger-slf4j:$koin_ktor_version")
 }
