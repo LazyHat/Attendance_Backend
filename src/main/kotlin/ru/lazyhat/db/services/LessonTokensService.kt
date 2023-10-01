@@ -20,7 +20,7 @@ interface LessonTokensService {
     suspend fun find(id: String): LessonToken?
 }
 
-class LessonTokensServiceImpl(private val database: Database) : LessonTokensService {
+class LessonTokensServiceImpl(database: Database) : LessonTokensService {
     private object QrCodeTokens : Table() {
         val id = uuid("id").clientDefault { UUID.randomUUID() }
         val lessonId = uinteger("lesson_id")

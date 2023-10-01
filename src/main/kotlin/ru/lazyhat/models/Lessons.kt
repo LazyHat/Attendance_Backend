@@ -12,3 +12,20 @@ data class Lesson(
     val end: LocalDateTime,
     val groupsList: Set<String>
 )
+
+@Serializable
+data class LessonUpdate(
+    val username: String,
+    val title: String,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
+    val groupsList: Set<String>
+)
+
+@Serializable
+data class LessonCreate(
+    val title: String,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
+    val groupsList: Set<String>
+)

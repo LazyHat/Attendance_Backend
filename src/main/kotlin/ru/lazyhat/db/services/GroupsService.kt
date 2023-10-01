@@ -18,7 +18,7 @@ interface GroupsService {
     suspend fun delete(id: String): Boolean
 }
 
-class GroupsServiceImpl(private val database: Database) : GroupsService {
+class GroupsServiceImpl(database: Database) : GroupsService {
     private object Groups : Table() {
         val group = varchar("group", Constants.Length.group)
         val lessonsList = text("lessons")

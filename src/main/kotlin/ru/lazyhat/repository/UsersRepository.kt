@@ -8,23 +8,24 @@ import ru.lazyhat.models.StudentCreate
 import ru.lazyhat.models.Teacher
 import ru.lazyhat.plugins.JWTAuth
 
-interface UserRepository {
+interface UsersRepository {
     suspend fun logIn(username: String, password: String, access: Access): String?
     suspend fun registerTeacher(teacher: Teacher): Boolean
     suspend fun registerStudent(studentCreate: StudentCreate): Boolean
     suspend fun findStudentByUsername(username: String): Student?
     suspend fun findTeacherByUsername(username: String): Teacher?
+    suspend fun findStudentsByGroup(group: String): Set<Student>
 }
 
-class UserRepositoryImpl(
+class UsersRepositoryImpl(
     val studentsService: StudentsService,
     val teachersService: TeachersService,
     val jwtAuth: JWTAuth
-) : UserRepository {
+) : UsersRepository {
     override suspend fun logIn(username: String, password: String, access: Access): String? =
         if (when (access) {
                 Access.Student -> {
-                    studentsService.find(username)?.password == password
+                    studentsService.findByUsername(username)?.password == password
                 }
 
                 Access.Teacher -> {
@@ -37,7 +38,7 @@ class UserRepositoryImpl(
 
     override suspend fun registerTeacher(teacher: Teacher): Boolean = teachersService.create(teacher)
     override suspend fun registerStudent(studentCreate: StudentCreate): Boolean = studentsService.create(studentCreate)
-    override suspend fun findStudentByUsername(username: String): Student? = studentsService.find(username)
+    override suspend fun findStudentByUsername(username: String): Student? = studentsService.findByUsername(username)
     override suspend fun findTeacherByUsername(username: String): Teacher? = teachersService.find(username)
-
+    override suspend fun findStudentsByGroup(group: String): Set<Student> = studentsService.findByGroup(group)
 }

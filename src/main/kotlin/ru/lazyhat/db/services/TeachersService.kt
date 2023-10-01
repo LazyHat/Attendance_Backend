@@ -17,7 +17,7 @@ interface TeachersService {
     suspend fun delete(username: String): Boolean
 }
 
-class TeachersServiceImpl(private val database: Database) : TeachersService {
+class TeachersServiceImpl(database: Database) : TeachersService {
     private object Teachers : Table() {
         val username = varchar("username", Constants.Length.username)
         val password = varchar("password", Constants.Length.password)

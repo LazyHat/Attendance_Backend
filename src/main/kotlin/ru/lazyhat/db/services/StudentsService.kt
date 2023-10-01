@@ -14,18 +14,18 @@ import ru.lazyhat.models.StudentCreate
 
 interface StudentsService {
     suspend fun create(form: StudentCreate): Boolean
-    suspend fun find(username: String): Student?
+    suspend fun findByUsername(username: String): Student?
     suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean
     suspend fun delete(username: String): Boolean
-    suspend fun find(predicate: (Student) -> Boolean): Set<Student>
+    suspend fun findByGroup(group: String): Set<Student>
 }
 
-class StudentsServiceImpl(private val database: Database) : StudentsService {
+class StudentsServiceImpl(database: Database) : StudentsService {
     private object Students : Table() {
         val username = varchar("username", Constants.Length.username)
         val password = varchar("password", Constants.Length.password)
         val fullName = varchar("full_name", Constants.Length.fullname)
-        val status = enumeration("lesson", Status::class)
+        val status = enumeration("status", Status::class).clientDefault { Status.Idle }
         val groupId = varchar("group", Constants.Length.group)
 
         override val primaryKey = PrimaryKey(username)
@@ -71,17 +71,17 @@ class StudentsServiceImpl(private val database: Database) : StudentsService {
 
         }
 
-    override suspend fun find(username: String): Student? = dbQuery {
+    override suspend fun findByUsername(username: String): Student? = dbQuery {
         Students.select { Students.username eq username }.singleOrNull()
             ?.toStudent()
     }
 
-    override suspend fun find(predicate: (Student) -> Boolean): Set<Student> = dbQuery {
-        Students.selectAll().map { it.toStudent() }.filter(predicate).toSet()
+    override suspend fun findByGroup(group: String): Set<Student> = dbQuery {
+        Students.select { Students.groupId eq group }.map { it.toStudent() }.toSet()
     }
 
     override suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean = dbQuery {
-        val old = find(username)
+        val old = findByUsername(username)
         Students.update({ Students.username eq username }) { it.applyStudent(new(old)) } == 1
     }
 

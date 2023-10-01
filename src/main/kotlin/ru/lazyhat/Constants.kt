@@ -1,6 +1,6 @@
 package ru.lazyhat
 
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 object Constants {
@@ -13,7 +13,7 @@ object Constants {
         val groupsList = 20
     }
     object TokensLives {
-        val jwt = 3.days
+        val jwt = 8.hours
         val lesson = 3.minutes
     }
 }

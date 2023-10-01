@@ -7,8 +7,8 @@ import org.koin.dsl.module
 import ru.lazyhat.db.services.*
 import ru.lazyhat.repository.LessonsRepository
 import ru.lazyhat.repository.LessonsRepositoryImpl
-import ru.lazyhat.repository.UserRepository
-import ru.lazyhat.repository.UserRepositoryImpl
+import ru.lazyhat.repository.UsersRepository
+import ru.lazyhat.repository.UsersRepositoryImpl
 
 fun Application.configureDatabaseModule(): Module {
     val driverClassName = environment.config.property("storage.driverClassName").getString()
@@ -27,7 +27,7 @@ fun Application.configureDatabaseModule(): Module {
         single<TeachersService> { TeachersServiceImpl(database) }
         single<LessonTokensService> { LessonTokensServiceImpl(database) }
         single<GroupsService> { GroupsServiceImpl(database) }
-        single<UserRepository> { UserRepositoryImpl(get(), get(), get()) }
+        single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
         single<LessonsRepository> { LessonsRepositoryImpl(get()) }
     }
 }
