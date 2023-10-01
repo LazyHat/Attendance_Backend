@@ -36,6 +36,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$datetime_version")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
     implementation("org.postgresql:postgresql:$postgresql_version")

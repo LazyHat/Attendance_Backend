@@ -8,15 +8,19 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import ru.lazyhat.db.configureDatabaseModule
 import ru.lazyhat.plugins.configureAuth
+import ru.lazyhat.plugins.configureAuthModule
 import ru.lazyhat.routing.configureRouting
 
 fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
     install(ContentNegotiation) { json() }
-    install(Koin){
+    install(Koin) {
         slf4jLogger()
-        modules(configureDatabaseModule())
+        modules(
+            configureDatabaseModule(),
+            configureAuthModule()
+        )
     }
     configureAuth()
     configureRouting()

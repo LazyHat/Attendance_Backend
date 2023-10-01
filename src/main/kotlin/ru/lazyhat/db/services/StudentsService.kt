@@ -1,25 +1,28 @@
 package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.lazyhat.models.Student
+import ru.lazyhat.models.StudentCreate
 
-@Serializable
-data class StudentCreateForm(val username: String, val pass: String, val fullName: String)
 
-@Serializable
-data class Student(val username: String, val fullName: String, val pass: String, val lessonId: Int?)
+interface StudentsService {
+    suspend fun create(form: StudentCreate): Boolean
+    suspend fun find(username: String): Student?
+    suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean
+    suspend fun delete(username: String): Boolean
+}
 
-class StudentsService(private val database: Database) {
-    object Students : Table() {
+class StudentsServiceImpl(private val database: Database) : StudentsService {
+    private object Students : Table() {
         val username = varchar("username", length = 50)
-        val pass = varchar("pass", length = 50)
+        val password = varchar("password", length = 32)
         val fullName = varchar("full_name", 200)
         val lessonId = integer("lesson").nullable()
-        override val primaryKey = PrimaryKey(username)
     }
 
     init {
@@ -28,46 +31,48 @@ class StudentsService(private val database: Database) {
         }
     }
 
-    suspend fun <T> dbQuery(block: suspend () -> T): T =
+    private fun ResultRow.toStudent() = Student(
+        this[Students.username],
+        this[Students.fullName],
+        this[Students.password],
+        this[Students.lessonId]
+    )
+
+    private fun UpdateBuilder<Int>.applyStudent(student: Student) = this.apply {
+        this[Students.username] = student.username
+        this[Students.fullName] = student.fullName
+        this[Students.password] = student.password
+        this[Students.lessonId] = student.lessonId
+    }
+
+    private fun UpdateBuilder<Int>.applyStudent(student: StudentCreate) = this.apply {
+        this[Students.username] = student.username
+        this[Students.fullName] = student.fullName
+        this[Students.password] = student.password
+    }
+
+    private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    suspend fun create(form: StudentCreateForm): String = dbQuery {
+    override suspend fun create(form: StudentCreate): Boolean = dbQuery {
         Students.insert {
-            it[username] = form.username
-            it[pass] = form.pass
-            it[fullName] = form.fullName
-        }[Students.username]
+            it.applyStudent(form)
+        }.insertedCount == 1
     }
 
-    suspend fun isEmpty(): Boolean = dbQuery { //TODO delete method
-        Students.selectAll().empty()
-    }
-
-    suspend fun authentificate(username: String, pass: String): Boolean = dbQuery {
-        Students.select { Students.username eq username}.singleOrNull()?.let {
-            it[Students.pass] == pass
-        } ?: false
-    }
-
-    suspend fun read(username: String): Student? {
+    override suspend fun find(username: String): Student? {
         return dbQuery {
             Students.select { Students.username eq username }.singleOrNull()
-                ?.let { Student(it[Students.username], it[Students.fullName], it[Students.pass], it[Students.lessonId]) }
+                ?.toStudent()
         }
     }
 
-    suspend fun update(username: String, user: Student) {
-        dbQuery {
-            Students.update({ Students.username eq username }) {
-                it[Students.username] = username
-                it[fullName] = user.fullName
-            }
-        }
+    override suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean = dbQuery {
+        val old = find(username)
+        Students.update({ Students.username eq username }) { it.applyStudent(new(old)) } == 1
     }
 
-    suspend fun delete(username: String) {
-        dbQuery {
-            Students.deleteWhere { Students.username.eq(username) }
-        }
-    }
+    override suspend fun delete(username: String): Boolean = dbQuery {
+        Students.deleteWhere { Students.username.eq(username) }
+    } == 1
 }

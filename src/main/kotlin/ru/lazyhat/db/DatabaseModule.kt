@@ -1,13 +1,12 @@
 package ru.lazyhat.db
 
 import io.ktor.server.application.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.Database
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.lazyhat.db.services.*
+import ru.lazyhat.repository.UserRepository
+import ru.lazyhat.repository.UserRepositoryImpl
 
 fun Application.configureDatabaseModule(): Module {
     val driverClassName = environment.config.property("storage.driverClassName").getString()
@@ -21,18 +20,10 @@ fun Application.configureDatabaseModule(): Module {
         // password = dbPass
     )
     return module {
-        single { StudentsService(database) }
+        single<StudentsService> { StudentsServiceImpl(database) }
+        single<LessonsService> { LessonsServiceImpl(database) }
+        single<TeachersService> { TeachersServiceImpl(database) }
+        single<UserRepository> { UserRepositoryImpl(get(),get(), get()) }
         single { QrCodeTokensService(database) }
-        single { LessonsService(database) }
-        single { ApiTokensService(database) }
-    }
-}
-
-fun initDatabase(studentsService: StudentsService) {
-    val scope = CoroutineScope(Dispatchers.IO)
-    scope.launch {
-        if (studentsService.isEmpty()) {
-            studentsService.create(StudentCreateForm("lazyhat", "pass", "lazyfullname"))
-        }
     }
 }

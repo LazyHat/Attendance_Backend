@@ -12,10 +12,18 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 
 @Serializable
-data class Lesson(val title: String, val start: LocalDateTime, val end: LocalDateTime)
+data class Lesson(val id: Int, val title: String, val start: LocalDateTime, val end: LocalDateTime)
 
-class LessonsService(private val database: Database) {
-    object Lessons : IntIdTable() {
+interface LessonsService {
+    suspend fun create(lesson: Lesson): Boolean
+    suspend fun findById(id: Int): Lesson?
+    suspend fun update(id: Int, new: (old: Lesson?) -> Lesson): Boolean
+
+    suspend fun delete(id: Int): Boolean
+}
+
+class LessonsServiceImpl(private val database: Database) : LessonsService {
+    private object Lessons : IntIdTable() {
         val title = varchar("title", 100)
         val start = datetime("start")
         val end = datetime("end")
@@ -27,40 +35,42 @@ class LessonsService(private val database: Database) {
         }
     }
 
-    private fun UpdateBuilder<Int>.update(lesson: Lesson) {
-        set(Lessons.title, lesson.title)
-        set(Lessons.start, lesson.start)
-        set(Lessons.end, lesson.end)
+    private fun UpdateBuilder<Int>.applyLesson(lesson: Lesson) = this.apply {
+        this[Lessons.title] = lesson.title
+        this[Lessons.start] = lesson.start
+        this[Lessons.end] = lesson.end
     }
 
-    suspend fun <T> dbQuery(block: suspend () -> T): T =
+    private fun ResultRow.toLesson(): Lesson = this.let {
+        Lesson(
+            it[Lessons.id].value, it[Lessons.title], it[Lessons.start], it[Lessons.end]
+        )
+    }
+
+
+    private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    suspend fun create(lesson: Lesson): Int = dbQuery {
+    override suspend fun create(lesson: Lesson): Boolean = dbQuery {
         Lessons.insert {
-            it.update(lesson)
-        }[Lessons.id].value
+            it.applyLesson(lesson)
+        }.insertedCount == 1
     }
 
-    suspend fun read(id: Int): Lesson? {
-        return dbQuery {
-            Lessons.select { Lessons.id eq id }
-                .map { Lesson(it[Lessons.title], it[Lessons.start], it[Lessons.end]) }
-                .singleOrNull()
-        }
+    override suspend fun findById(id: Int): Lesson? = dbQuery {
+        Lessons.select { Lessons.id eq id }.singleOrNull()
+            ?.toLesson()
+
     }
 
-    suspend fun update(id: Int, lesson: Lesson) {
-        dbQuery {
-            Lessons.update({ Lessons.id eq id }) {
-                it.update(lesson)
-            }
+    override suspend fun update(id: Int, new: (old: Lesson?) -> Lesson): Boolean = dbQuery {
+        val old = findById(id)
+        Lessons.update({ Lessons.id eq id }) {
+            it.applyLesson(new(old))
         }
-    }
+    } == 1
 
-    suspend fun delete(id: Int) {
-        dbQuery {
-            Lessons.deleteWhere { Lessons.id.eq(id) }
-        }
-    }
+    override suspend fun delete(id: Int): Boolean = dbQuery {
+        Lessons.deleteWhere { Lessons.id.eq(id) }
+    } == 1
 }
