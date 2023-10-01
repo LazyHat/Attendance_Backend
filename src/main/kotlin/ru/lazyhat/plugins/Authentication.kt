@@ -8,7 +8,7 @@ import io.ktor.server.response.*
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
-import ru.lazyhat.models.Access
+import ru.lazyhat.models.UserPrincipal
 
 fun Application.configureAuth() {
     val jwtAuth by inject<JWTAuth>()
@@ -29,7 +29,7 @@ fun Application.configureAuth() {
             validate { credential ->
                 with(jwtAuth) {
                     credential.toUserPrincipal()
-                }?.takeIf { it.access == Access.Student }
+                }?.let { it as? UserPrincipal.StudentPrincipal }
             }
             challenge { defaultScheme, realm ->
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
@@ -40,7 +40,7 @@ fun Application.configureAuth() {
             validate { credential ->
                 with(jwtAuth) {
                     credential.toUserPrincipal()
-                }?.takeIf { it.access == Access.Teacher }
+                }?.let { it as? UserPrincipal.TeacherPrincipal }
             }
             challenge { defaultScheme, realm ->
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")

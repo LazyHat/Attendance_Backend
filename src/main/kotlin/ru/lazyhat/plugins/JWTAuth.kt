@@ -4,20 +4,17 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import kotlinx.datetime.*
-import kotlinx.serialization.Serializable
 import ru.lazyhat.models.Access
+import ru.lazyhat.models.UserPrincipal
 import kotlin.time.Duration.Companion.minutes
-
-@Serializable
-data class UserPrincipal(val username: String, val access: Access, val expires_at: LocalDateTime) : Principal
 
 class JWTAuth(environment: ApplicationEnvironment) {
     val secret = environment.config.property("jwt.secret").getString()
     val issuer = environment.config.property("jwt.issuer").getString()
     val audience = environment.config.property("jwt.audience").getString()
+
     //val realm = environment.config.property("jwt.realm").getString()
     val validFor = 3.minutes
     val algorithm = Algorithm.HMAC256(secret)
@@ -33,11 +30,14 @@ class JWTAuth(environment: ApplicationEnvironment) {
         mapOf(Keys.username to username, Keys.access to access.name)
 
     fun JWTCredential.toUserPrincipal(): UserPrincipal? = this.payload.let {
-        val login = it.claims[Keys.username]?.asString()
+        val username = it.claims[Keys.username]?.asString()
         val access = it.claims[Keys.access]?.asString()?.let { Access.valueOf(it) }
         val expiresAt = it.expiresAtAsInstant?.toKotlinInstant()?.toLocalDateTime(TimeZone.currentSystemDefault())
-        return if (login != null && access != null && expiresAt != null) {
-            UserPrincipal(login, access, expiresAt)
+        return if (username != null && access != null && expiresAt != null) {
+            when (access) {
+                Access.Teacher -> UserPrincipal.TeacherPrincipal(username, expiresAt)
+                Access.Student -> UserPrincipal.StudentPrincipal(username, expiresAt)
+            }
         } else null
     }
 

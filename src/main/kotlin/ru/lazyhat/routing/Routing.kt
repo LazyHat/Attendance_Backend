@@ -10,7 +10,7 @@ import org.koin.ktor.ext.inject
 import ru.lazyhat.models.Access
 import ru.lazyhat.models.StudentCreate
 import ru.lazyhat.models.Teacher
-import ru.lazyhat.plugins.UserPrincipal
+import ru.lazyhat.models.UserPrincipal
 import ru.lazyhat.repository.UserRepository
 
 fun Application.configureRouting() {
@@ -37,23 +37,36 @@ fun Application.configureRouting() {
             post("register") {
                 val form: StudentCreate = call.receive()
                 userRepository.registerStudent(form).let {
-                    if (it)
-                        call.respond(HttpStatusCode.Created)
-                    else
-                        call.respond(HttpStatusCode.BadRequest)
+                    call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
                 }
             }
         }
         route("teacher") {
             post("register") {
                 val form: Teacher = call.receive()
-                userRepository
+                userRepository.registerTeacher(form).let {
+                    call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
+                }
+            }
+            get("login"){
+                val username = call.request.queryParameters["username"]
+                val password = call.request.queryParameters["password"]
+                if (username == null || password == null) {
+                    call.respond(HttpStatusCode.BadRequest, "invalid login")
+                } else {
+                    val token = userRepository.logIn(username, password, Access.Teacher)
+                    if (token != null) {
+                        call.respond(token)
+                    } else {
+                        call.respond(HttpStatusCode.Unauthorized)
+                    }
+                }
             }
         }
         authenticate("student") {
             route("student") {
                 get("info") {
-                    call.principal<UserPrincipal>()?.let {
+                    call.principal<UserPrincipal.StudentPrincipal>()?.let {
                         userRepository.findStudentByUsername(it.username)?.let {
                             call.respond(it)
                         }
@@ -64,7 +77,11 @@ fun Application.configureRouting() {
         authenticate("teacher") {
             route("teacher") {
                 get("info") {
-                    call.respond("success")
+                    call.principal<UserPrincipal.TeacherPrincipal>()?.let {
+                        userRepository.findTeacherByUsername(it.username)?.let {
+                            call.respond(it)
+                        }
+                    } ?: call.respond("principal null")
                 }
             }
         }

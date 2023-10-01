@@ -23,6 +23,8 @@ class StudentsServiceImpl(private val database: Database) : StudentsService {
         val password = varchar("password", length = 32)
         val fullName = varchar("full_name", 200)
         val lessonId = integer("lesson").nullable()
+
+        override val primaryKey = PrimaryKey(username)
     }
 
     init {
@@ -54,17 +56,17 @@ class StudentsServiceImpl(private val database: Database) : StudentsService {
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    override suspend fun create(form: StudentCreate): Boolean = dbQuery {
-        Students.insert {
-            it.applyStudent(form)
-        }.insertedCount == 1
-    }
+    override suspend fun create(form: StudentCreate): Boolean =
+        dbQuery {
+            Students.insert {
+                it.applyStudent(form)
+            }.insertedCount == 1
 
-    override suspend fun find(username: String): Student? {
-        return dbQuery {
-            Students.select { Students.username eq username }.singleOrNull()
-                ?.toStudent()
         }
+
+    override suspend fun find(username: String): Student? = dbQuery {
+        Students.select { Students.username eq username }.singleOrNull()
+            ?.toStudent()
     }
 
     override suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean = dbQuery {
