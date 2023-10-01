@@ -5,6 +5,8 @@ import org.jetbrains.exposed.sql.Database
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.lazyhat.db.services.*
+import ru.lazyhat.repository.LessonsRepository
+import ru.lazyhat.repository.LessonsRepositoryImpl
 import ru.lazyhat.repository.UserRepository
 import ru.lazyhat.repository.UserRepositoryImpl
 
@@ -23,7 +25,9 @@ fun Application.configureDatabaseModule(): Module {
         single<StudentsService> { StudentsServiceImpl(database) }
         single<LessonsService> { LessonsServiceImpl(database) }
         single<TeachersService> { TeachersServiceImpl(database) }
-        single<UserRepository> { UserRepositoryImpl(get(),get(), get()) }
-        single { QrCodeTokensService(database) }
+        single<LessonTokensService> { LessonTokensServiceImpl(database) }
+        single<GroupsService> { GroupsServiceImpl(database) }
+        single<UserRepository> { UserRepositoryImpl(get(), get(), get()) }
+        single<LessonsRepository> { LessonsRepositoryImpl(get()) }
     }
 }

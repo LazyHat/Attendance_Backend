@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.lazyhat.Constants
 import ru.lazyhat.models.Teacher
 
 
@@ -18,9 +19,9 @@ interface TeachersService {
 
 class TeachersServiceImpl(private val database: Database) : TeachersService {
     private object Teachers : Table() {
-        val username = varchar("username", length = 50)
-        val password = varchar("password", length = 32)
-        val fullName = varchar("full_name", 200)
+        val username = varchar("username", Constants.Length.username)
+        val password = varchar("password", Constants.Length.password)
+        val fullName = varchar("full_name", Constants.Length.fullname)
         override val primaryKey = PrimaryKey(username)
     }
 

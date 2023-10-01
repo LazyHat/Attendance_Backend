@@ -39,4 +39,5 @@ class UserRepositoryImpl(
     override suspend fun registerStudent(studentCreate: StudentCreate): Boolean = studentsService.create(studentCreate)
     override suspend fun findStudentByUsername(username: String): Student? = studentsService.find(username)
     override suspend fun findTeacherByUsername(username: String): Teacher? = teachersService.find(username)
+
 }

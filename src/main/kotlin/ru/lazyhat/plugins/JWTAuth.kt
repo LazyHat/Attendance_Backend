@@ -6,9 +6,9 @@ import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
 import io.ktor.server.auth.jwt.*
 import kotlinx.datetime.*
+import ru.lazyhat.Constants
 import ru.lazyhat.models.Access
 import ru.lazyhat.models.UserPrincipal
-import kotlin.time.Duration.Companion.minutes
 
 class JWTAuth(environment: ApplicationEnvironment) {
     val secret = environment.config.property("jwt.secret").getString()
@@ -16,7 +16,6 @@ class JWTAuth(environment: ApplicationEnvironment) {
     val audience = environment.config.property("jwt.audience").getString()
 
     //val realm = environment.config.property("jwt.realm").getString()
-    val validFor = 3.minutes
     val algorithm = Algorithm.HMAC256(secret)
 
     companion object {
@@ -45,7 +44,7 @@ class JWTAuth(environment: ApplicationEnvironment) {
         .withAudience(audience)
         .withIssuer(issuer)
         .withPayload(createPayload(username, access))
-        .withExpiresAt(Clock.System.now().plus(validFor).toJavaInstant())
+        .withExpiresAt(Clock.System.now().plus(Constants.TokensLives.jwt).toJavaInstant())
         .sign(algorithm)
 
     fun buildVerifier(): JWTVerifier = JWT
