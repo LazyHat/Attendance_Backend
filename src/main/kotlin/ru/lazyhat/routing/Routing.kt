@@ -71,6 +71,17 @@ fun Application.configureRouting() {
                         }
                     } ?: call.respond(HttpStatusCode.Unauthorized)
                 }
+                get("register") {
+                    call.request.queryParameters["token"]?.let { token ->
+                        call.principal<UserPrincipal.StudentPrincipal>()?.let {principal ->
+                            lessonsRepository.getTokenInfo(token)?.let {lessonToken ->
+                                userRepository.updateStudentStatus(principal.username, Status.InLesson).takeIf { it }?.let {
+                                    call.respond(HttpStatusCode.OK)
+                                }
+                            }
+                        }
+                    } ?: call.respond(HttpStatusCode.BadRequest)
+                }
             }
         }
         authenticate("teacher") {

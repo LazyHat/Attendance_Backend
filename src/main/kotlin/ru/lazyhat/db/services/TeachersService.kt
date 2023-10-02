@@ -13,7 +13,7 @@ import ru.lazyhat.models.Teacher
 interface TeachersService {
     suspend fun create(form: Teacher): Boolean
     suspend fun find(username: String): Teacher?
-    suspend fun upsert(username: String, new: (old: Teacher?) -> Teacher): Boolean
+    suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean
     suspend fun delete(username: String): Boolean
 }
 
@@ -57,9 +57,10 @@ class TeachersServiceImpl(database: Database) : TeachersService {
         Teachers.select { Teachers.username eq username }.singleOrNull()?.toTeacher()
     }
 
-    override suspend fun upsert(username: String, new: (old: Teacher?) -> Teacher): Boolean = dbQuery {
-        val old = find(username)
-        Teachers.update({ Teachers.username eq username }) { it.applyTeacher(new(old)) } == 1
+    override suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean = dbQuery {
+        find(username)?.let {old ->
+            Teachers.update({ Teachers.username eq username }) { it.applyTeacher(new(old)) } == 1
+        } ?: false
     }
 
     override suspend fun delete(username: String): Boolean = dbQuery {

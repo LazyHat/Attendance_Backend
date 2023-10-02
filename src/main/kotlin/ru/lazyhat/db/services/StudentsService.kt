@@ -15,7 +15,7 @@ import ru.lazyhat.models.StudentCreate
 interface StudentsService {
     suspend fun create(form: StudentCreate): Boolean
     suspend fun findByUsername(username: String): Student?
-    suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean
+    suspend fun update(username: String, new: (old: Student) -> Student): Boolean
     suspend fun delete(username: String): Boolean
     suspend fun findByGroup(group: String): Set<Student>
 }
@@ -80,9 +80,10 @@ class StudentsServiceImpl(database: Database) : StudentsService {
         Students.select { Students.groupId eq group }.map { it.toStudent() }.toSet()
     }
 
-    override suspend fun upsert(username: String, new: (old: Student?) -> Student): Boolean = dbQuery {
-        val old = findByUsername(username)
-        Students.update({ Students.username eq username }) { it.applyStudent(new(old)) } == 1
+    override suspend fun update(username: String, new: (old: Student) -> Student): Boolean = dbQuery {
+        findByUsername(username)?.let {old ->
+            Students.update({ Students.username eq username }) { it.applyStudent(new(old)) } == 1
+        } ?: false
     }
 
     override suspend fun delete(username: String): Boolean = dbQuery {

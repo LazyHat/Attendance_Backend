@@ -2,10 +2,7 @@ package ru.lazyhat.repository
 
 import ru.lazyhat.db.services.StudentsService
 import ru.lazyhat.db.services.TeachersService
-import ru.lazyhat.models.Access
-import ru.lazyhat.models.Student
-import ru.lazyhat.models.StudentCreate
-import ru.lazyhat.models.Teacher
+import ru.lazyhat.models.*
 import ru.lazyhat.plugins.JWTAuth
 
 interface UsersRepository {
@@ -15,6 +12,7 @@ interface UsersRepository {
     suspend fun findStudentByUsername(username: String): Student?
     suspend fun findTeacherByUsername(username: String): Teacher?
     suspend fun findStudentsByGroup(group: String): Set<Student>
+    suspend fun updateStudentStatus(username: String, new: Status): Boolean
 }
 
 class UsersRepositoryImpl(
@@ -41,4 +39,8 @@ class UsersRepositoryImpl(
     override suspend fun findStudentByUsername(username: String): Student? = studentsService.findByUsername(username)
     override suspend fun findTeacherByUsername(username: String): Teacher? = teachersService.find(username)
     override suspend fun findStudentsByGroup(group: String): Set<Student> = studentsService.findByGroup(group)
+    override suspend fun updateStudentStatus(username: String, new: Status): Boolean =
+        studentsService.update(username) {
+            it.copy(status = new)
+        }
 }
