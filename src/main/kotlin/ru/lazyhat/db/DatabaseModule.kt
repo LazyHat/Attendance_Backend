@@ -28,6 +28,6 @@ fun Application.configureDatabaseModule(): Module {
         single<LessonTokensService> { LessonTokensServiceImpl(database) }
         single<GroupsService> { GroupsServiceImpl(database) }
         single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
-        single<LessonsRepository> { LessonsRepositoryImpl(get()) }
+        single<LessonsRepository> { LessonsRepositoryImpl(get(), get()) }
     }
 }

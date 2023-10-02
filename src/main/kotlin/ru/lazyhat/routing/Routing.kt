@@ -114,12 +114,23 @@ fun Application.configureRouting() {
                             }
                         } ?: call.respond(HttpStatusCode.BadRequest)
                     }
-                    get("{id}") {
-                        call.parameters["id"]?.toUIntOrNull()?.let {
-                            lessonsRepository.getLessonById(it)?.let {
-                                call.respond(it)
-                            }
-                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    route("{id}") {
+                        get {
+                            call.parameters["id"]?.toUIntOrNull()?.let {
+                                lessonsRepository.getLessonById(it)?.let {
+                                    call.respond(it)
+                                }
+                            } ?: call.respond(HttpStatusCode.BadRequest)
+                        }
+                        get("token") {
+                            call.parameters["id"]?.toUIntOrNull()?.let { id ->
+                                lessonsRepository.getLessonById(id)?.let {
+                                    lessonsRepository.createToken(id).let {
+                                        call.respond(it)
+                                    }
+                                }
+                            } ?: call.respond(HttpStatusCode.BadRequest)
+                        }
                     }
                 }
             }

@@ -27,7 +27,7 @@ class LessonTokensServiceImpl(database: Database) : LessonTokensService {
         val expires =
             datetime("expires").clientDefault {
                 Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime()
-                    .minusSeconds(Constants.TokensLives.lesson.inWholeSeconds)
+                    .plusSeconds(Constants.TokensLives.lesson.inWholeSeconds)
                     .toKotlinLocalDateTime()
             }
         override val primaryKey = PrimaryKey(id)
