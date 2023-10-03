@@ -12,6 +12,7 @@ import ru.lazyhat.models.Teacher
 
 interface TeachersService {
     suspend fun create(form: Teacher): Boolean
+    suspend fun getAll(): List<Teacher>
     suspend fun find(username: String): Teacher?
     suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean
     suspend fun delete(username: String): Boolean
@@ -53,12 +54,16 @@ class TeachersServiceImpl(database: Database) : TeachersService {
             }.insertedCount == 1
         }
 
+    override suspend fun getAll(): List<Teacher> = dbQuery {
+        Teachers.selectAll().map { it.toTeacher() }
+    }
+
     override suspend fun find(username: String): Teacher? = dbQuery {
         Teachers.select { Teachers.username eq username }.singleOrNull()?.toTeacher()
     }
 
     override suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean = dbQuery {
-        find(username)?.let {old ->
+        find(username)?.let { old ->
             Teachers.update({ Teachers.username eq username }) { it.applyTeacher(new(old)) } == 1
         } ?: false
     }

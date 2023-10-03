@@ -14,10 +14,11 @@ import ru.lazyhat.models.StudentCreate
 
 interface StudentsService {
     suspend fun create(form: StudentCreate): Boolean
+    suspend fun getAll(): List<Student>
     suspend fun findByUsername(username: String): Student?
     suspend fun update(username: String, new: (old: Student) -> Student): Boolean
     suspend fun delete(username: String): Boolean
-    suspend fun findByGroup(group: String): Set<Student>
+    suspend fun findByGroup(group: String): List<Student>
 }
 
 class StudentsServiceImpl(database: Database) : StudentsService {
@@ -71,17 +72,21 @@ class StudentsServiceImpl(database: Database) : StudentsService {
 
         }
 
+    override suspend fun getAll(): List<Student> = dbQuery {
+        Students.selectAll().map { it.toStudent() }
+    }
+
     override suspend fun findByUsername(username: String): Student? = dbQuery {
         Students.select { Students.username eq username }.singleOrNull()
             ?.toStudent()
     }
 
-    override suspend fun findByGroup(group: String): Set<Student> = dbQuery {
-        Students.select { Students.groupId eq group }.map { it.toStudent() }.toSet()
+    override suspend fun findByGroup(group: String): List<Student> = dbQuery {
+        Students.select { Students.groupId eq group }.map { it.toStudent() }
     }
 
     override suspend fun update(username: String, new: (old: Student) -> Student): Boolean = dbQuery {
-        findByUsername(username)?.let {old ->
+        findByUsername(username)?.let { old ->
             Students.update({ Students.username eq username }) { it.applyStudent(new(old)) } == 1
         } ?: false
     }

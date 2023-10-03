@@ -16,3 +16,6 @@ data class UserToken(
     val access: Access,
     val expiresAt: LocalDateTime
 )
+
+@Serializable
+data class Credentials(val username: String, val password: String)

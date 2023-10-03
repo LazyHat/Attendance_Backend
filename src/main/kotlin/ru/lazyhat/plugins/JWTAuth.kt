@@ -22,28 +22,40 @@ class JWTAuth(environment: ApplicationEnvironment) {
         private object Keys {
             val username = "username"
             val access = "access"
+            val password = "password"
         }
     }
 
-    fun createPayload(username: String, access: Access): Map<String, String> =
-        mapOf(Keys.username to username, Keys.access to access.name)
+    fun createPayload(username: String, access: Access, password: String?): Map<String, String> =
+        mutableMapOf(Keys.username to username, Keys.access to access.name).apply {
+            if (password != null && access != Access.Student)
+                this[Keys.password] = password
+        }
 
     fun JWTCredential.toUserPrincipal(): UserPrincipal? = this.payload.let {
         val username = it.claims[Keys.username]?.asString()
         val access = it.claims[Keys.access]?.asString()?.let { Access.valueOf(it) }
         val expiresAt = it.expiresAtAsInstant?.toKotlinInstant()?.toLocalDateTime(TimeZone.currentSystemDefault())
+        val password = it.claims[Keys.password]?.asString()
+
         return if (username != null && access != null && expiresAt != null) {
             when (access) {
-                Access.Teacher -> UserPrincipal.TeacherPrincipal(username, expiresAt)
                 Access.Student -> UserPrincipal.StudentPrincipal(username, expiresAt)
+                else -> password?.let {
+                    when (access) {
+                        Access.Teacher -> UserPrincipal.TeacherPrincipal(username, expiresAt, it)
+                        Access.Admin -> UserPrincipal.AdminPrincipal(username, expiresAt, it)
+                        else -> null
+                    }
+                }
             }
         } else null
     }
 
-    fun generateToken(username: String, access: Access): String = JWT.create()
+    fun generateToken(username: String, access: Access, password: String?): String = JWT.create()
         .withAudience(audience)
         .withIssuer(issuer)
-        .withPayload(createPayload(username, access))
+        .withPayload(createPayload(username, access, password))
         .withExpiresAt(Clock.System.now().plus(Constants.TokensLives.jwt).toJavaInstant())
         .sign(algorithm)
 

@@ -8,22 +8,16 @@ import io.ktor.server.response.*
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
+import ru.lazyhat.models.Credentials
 import ru.lazyhat.models.UserPrincipal
+import ru.lazyhat.repository.AdminRepository
+import ru.lazyhat.repository.UsersRepository
 
 fun Application.configureAuth() {
     val jwtAuth by inject<JWTAuth>()
+    val usersRepository by inject<UsersRepository>()
+    val adminRepository by inject<AdminRepository>()
     install(Authentication) {
-        jwt("user") {
-            verifier(jwtAuth.buildVerifier())
-            validate { credential ->
-                with(jwtAuth) {
-                    credential.toUserPrincipal()
-                }
-            }
-            challenge { defaultScheme, realm ->
-                call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
-            }
-        }
         jwt("student") {
             verifier(jwtAuth.buildVerifier())
             validate { credential ->
@@ -40,7 +34,22 @@ fun Application.configureAuth() {
             validate { credential ->
                 with(jwtAuth) {
                     credential.toUserPrincipal()
-                }?.let { it as? UserPrincipal.TeacherPrincipal }
+                }?.let { it as? UserPrincipal.TeacherPrincipal }?.takeIf {
+                    usersRepository.findTeacherByUsername(it.username)?.password == it.password
+                }
+            }
+            challenge { defaultScheme, realm ->
+                call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
+            }
+        }
+        jwt("admin") {
+            verifier(jwtAuth.buildVerifier())
+            validate { credential ->
+                with(jwtAuth) {
+                    credential.toUserPrincipal()
+                }?.let { it as? UserPrincipal.AdminPrincipal }?.takeIf {
+                    adminRepository.validateSuperUser(Credentials(it.username, it.password))
+                }
             }
             challenge { defaultScheme, realm ->
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")

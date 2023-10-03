@@ -1,0 +1,40 @@
+package ru.lazyhat.routing
+
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
+import ru.lazyhat.models.Status
+import ru.lazyhat.models.UserPrincipal
+import ru.lazyhat.repository.LessonsRepository
+import ru.lazyhat.repository.UsersRepository
+
+fun Route.studentRouting() {
+    val usersRepository by inject<UsersRepository>()
+    val lessonsRepository by inject<LessonsRepository>()
+    authenticate("student") {
+        route("student") {
+            get("info") {
+                val principal = call.principal<UserPrincipal.StudentPrincipal>()!!
+                usersRepository.findStudentByUsername(principal.username)?.let {
+                    call.respond(it)
+                } ?: call.respond(HttpStatusCode.NotFound)
+            }
+            get("register") {
+                call.request.queryParameters["token"]?.let { token ->
+                    val principal = call.principal<UserPrincipal.StudentPrincipal>()!!
+                    lessonsRepository.getTokenInfo(token)?.let { lessonToken ->
+                        usersRepository.updateStudentStatus(principal.username, Status.InLesson).let {
+                            if (it)
+                                call.respond(HttpStatusCode.OK)
+                            else
+                                call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    } ?: call.respond(HttpStatusCode.NotFound)
+                } ?: call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+    }
+}

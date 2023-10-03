@@ -14,7 +14,14 @@ sealed interface UserPrincipal : Principal {
 
     data class TeacherPrincipal(
         override val username: String,
-        override val expires_at: LocalDateTime
+        override val expires_at: LocalDateTime,
+        val password: String
+    ) : UserPrincipal
+
+    data class AdminPrincipal(
+        override val username: String,
+        override val expires_at: LocalDateTime,
+        val password: String
     ) : UserPrincipal
 }
 

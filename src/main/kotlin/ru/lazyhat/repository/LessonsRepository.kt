@@ -8,8 +8,8 @@ import ru.lazyhat.models.LessonUpdate
 
 interface LessonsRepository {
     suspend fun createLesson(lesson: LessonUpdate): Boolean
-    suspend fun getLessonsByUsername(username: String): Set<Lesson>
-    suspend fun getLessonsByGroup(group: String): Set<Lesson>
+    suspend fun getLessonsByUsername(username: String):List<Lesson>
+    suspend fun getLessonsByGroup(group: String): List<Lesson>
     suspend fun getLessonById(id: UInt): Lesson?
     suspend fun createToken(id: UInt): LessonToken
     suspend fun getTokenInfo(id: String): LessonToken?
@@ -21,10 +21,10 @@ class LessonsRepositoryImpl(
     val lessonTokensService: LessonTokensService
 ) : LessonsRepository {
     override suspend fun createLesson(lesson: LessonUpdate): Boolean = lessonsService.create(lesson)
-    override suspend fun getLessonsByUsername(username: String): Set<Lesson> =
+    override suspend fun getLessonsByUsername(username: String): List<Lesson> =
         lessonsService.findByUsername(username)
 
-    override suspend fun getLessonsByGroup(group: String): Set<Lesson> =
+    override suspend fun getLessonsByGroup(group: String): List<Lesson> =
         lessonsService.findByGroup(group)
 
     override suspend fun getLessonById(id: UInt): Lesson? = lessonsService.findById(id)

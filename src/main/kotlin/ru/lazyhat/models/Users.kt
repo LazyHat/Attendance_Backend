@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class Access {
     Student,
-    Teacher
+    Teacher,
+    Admin
 }
 
 @Serializable
