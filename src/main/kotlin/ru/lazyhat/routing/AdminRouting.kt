@@ -3,6 +3,7 @@ package ru.lazyhat.routing
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -27,8 +28,22 @@ fun Route.adminRouting() {
 
     authenticate("admin") {
         route("admin") {
-            get("lessons"){
-                call.respond(adminRepository.getAllLessons())
+            route("lessons") {
+                get {
+                    call.respond(adminRepository.getAllLessons())
+                }
+                post {
+                    adminRepository.createLesson(call.receive()).let {
+                        call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
+                    }
+                }
+                get("{id}") {
+                    call.parameters["id"]?.toUIntOrNull()?.let {
+                        adminRepository.getLessonById(it)?.let {
+                            call.respond(it)
+                        } ?: call.respond(HttpStatusCode.NoContent)
+                    } ?: call.respond(HttpStatusCode.BadRequest)
+                }
             }
         }
     }
