@@ -43,7 +43,7 @@ class RegistryRepositoryImpl(
                 it.first, it.second.map {
                     LessonAttendance.GroupAttendance.StudentAttendance(
                         it,
-                        registryService.findByStudent(it.username).let {
+                        registryService.findByStudent(it.username).filter { it.lessonId == lessonId }.let {
                             val statuses =
                                 it.groupBy { it.createdAt.date }.mapValues { AttendanceStatus.Attended }.toMutableMap()
                             listDates?.forEach {
