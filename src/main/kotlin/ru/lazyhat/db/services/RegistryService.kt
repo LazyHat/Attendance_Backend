@@ -11,20 +11,19 @@ import ru.lazyhat.Constants
 import ru.lazyhat.models.RegistryRecord
 import ru.lazyhat.models.RegistryRecordCreate
 import ru.lazyhat.models.toRegistryRecordCreate
-import java.util.*
 
 interface RegistryService {
     suspend fun create(registry: RegistryRecordCreate): Boolean
-    suspend fun find(id: UUID): RegistryRecord?
+    suspend fun find(id: ULong): RegistryRecord?
     suspend fun findByLesson(lessonId: UInt): List<RegistryRecord>
     suspend fun findByStudent(username: String): List<RegistryRecord>
-    suspend fun update(id: UUID, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean
-    suspend fun delete(id: UUID): Boolean
+    suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean
+    suspend fun delete(id: ULong): Boolean
 }
 
 class RegistryServiceImpl(database: Database) : RegistryService {
     private object Registry : Table() {
-        val id = uuid("id").autoIncrement()
+        val id = ulong("id")
         val lessonId = uinteger("lesson_id")
         val student = varchar("student", Constants.Length.username)
         val createdAt = datetime("created_at")
@@ -60,7 +59,7 @@ class RegistryServiceImpl(database: Database) : RegistryService {
             }.insertedCount == 1
         }
 
-    override suspend fun find(id: UUID): RegistryRecord? = dbQuery {
+    override suspend fun find(id: ULong): RegistryRecord? = dbQuery {
         Registry.select { Registry.id eq id }.singleOrNull()?.toRegistryRecord()
     }
 
@@ -72,13 +71,13 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         Registry.select { Registry.student eq username }.map { it.toRegistryRecord() }
     }
 
-    override suspend fun update(id: UUID, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean = dbQuery {
+    override suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean = dbQuery {
         find(id)?.let { old ->
             Registry.update({ Registry.id eq id }) { it.applyRegistryRecord(new(old.toRegistryRecordCreate())) } == 1
         } ?: false
     }
 
-    override suspend fun delete(id: UUID): Boolean = dbQuery {
+    override suspend fun delete(id: ULong): Boolean = dbQuery {
         Registry.deleteWhere { Registry.id eq id }
     } == 1
 }

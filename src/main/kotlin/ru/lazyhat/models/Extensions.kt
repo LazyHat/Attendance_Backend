@@ -1,8 +1,6 @@
 package ru.lazyhat.models
 
 import kotlinx.datetime.*
-import kotlinx.datetime.TimeZone
-import java.util.*
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -27,4 +25,4 @@ fun LocalDateTime.Companion.now(): LocalDateTime = Clock.System.now().toLocalDat
 fun Duration.roundTo(unit: DurationUnit) = this.toLong(unit).toDuration(unit)
 
 fun RegistryRecord.toRegistryRecordCreate(): RegistryRecordCreate = RegistryRecordCreate(lessonId, student, createdAt)
-fun RegistryRecordCreate.toRegistryRecord(id: UUID): RegistryRecord = RegistryRecord(id, lessonId, student, createdAt)
+fun RegistryRecordCreate.toRegistryRecord(id: ULong): RegistryRecord = RegistryRecord(id, lessonId, student, createdAt)

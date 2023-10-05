@@ -28,7 +28,7 @@ fun Application.configureDatabaseModule(): Module {
         single<LessonTokensService> { LessonTokensServiceImpl(database) }
         single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
         single<LessonsRepository> { LessonsRepositoryImpl(get(), get()) }
-        single<RegistryService> { RegistryServiceImpl(get()) }
+        single<RegistryService> { RegistryServiceImpl(database) }
         single<RegistryRepository> { RegistryRepositoryImpl(get(), get(), get()) }
         single<AdminRepository> {
             AdminRepositoryImpl(
