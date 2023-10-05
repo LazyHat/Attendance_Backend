@@ -17,11 +17,12 @@ interface RegistryService {
     suspend fun create(registry: RegistryRecordCreate): Boolean
     suspend fun find(id: UUID): RegistryRecord?
     suspend fun findByLesson(lessonId: UInt): List<RegistryRecord>
+    suspend fun findByStudent(username: String): List<RegistryRecord>
     suspend fun update(id: UUID, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean
     suspend fun delete(id: UUID): Boolean
 }
 
-class RegistryServiceImpl(private val database: Database) : RegistryService {
+class RegistryServiceImpl(database: Database) : RegistryService {
     private object Registry : Table() {
         val id = uuid("id").autoIncrement()
         val lessonId = uinteger("lesson_id")
@@ -65,6 +66,10 @@ class RegistryServiceImpl(private val database: Database) : RegistryService {
 
     override suspend fun findByLesson(lessonId: UInt): List<RegistryRecord> = dbQuery {
         Registry.select { Registry.lessonId eq lessonId }.map { it.toRegistryRecord() }
+    }
+
+    override suspend fun findByStudent(username: String): List<RegistryRecord> = dbQuery {
+        Registry.select { Registry.student eq username }.map { it.toRegistryRecord() }
     }
 
     override suspend fun update(id: UUID, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean = dbQuery {

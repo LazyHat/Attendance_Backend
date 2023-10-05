@@ -5,7 +5,6 @@ import kotlinx.datetime.LocalDateTime
 import java.util.*
 
 
-
 data class RegistryRecord(
     val id: UUID,
     val lessonId: UInt,
@@ -23,12 +22,18 @@ enum class AttendanceStatus {
     Attended,
     Missing
 }
+
 data class LessonAttendance(
     val lessonId: UInt,
-    val students: List<StudentAttendance>
+    val students: List<GroupAttendance>
 ) {
-    data class StudentAttendance(
-        val student: Student,
-        val attendance: Map<LocalDate, AttendanceStatus>
-    )
+    data class GroupAttendance(
+        val group: String,
+        val attendance: List<StudentAttendance>
+    ) {
+        data class StudentAttendance(
+            val student: Student,
+            val attendance: Map<LocalDate, AttendanceStatus>
+        )
+    }
 }

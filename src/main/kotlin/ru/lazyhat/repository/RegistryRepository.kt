@@ -24,35 +24,37 @@ class RegistryRepositoryImpl(
         registryService.create(registryCreate)
 
     override suspend fun getAttendanceByLesson(lessonId: UInt): LessonAttendance {
-        val listDates = lessonsService.findById(lessonId)?.let { lesson ->
-            val range = (lesson.startDate.dayOfWeek.ordinal - lesson.dayOfWeek.ordinal).let {
+        val lesson = lessonsService.findById(lessonId)
+        val listDates = lesson?.let { lessonEntry ->
+            val range = (lessonEntry.startDate.dayOfWeek.ordinal - lessonEntry.dayOfWeek.ordinal).let {
                 if (it < 0)
                     it + 7
                 else
                     it
             }
-            val startDate = lesson.startDate.plus(range, DateTimeUnit.DAY)
-            List(size = lesson.durationWeeks.toInt()) {
+            val startDate = lessonEntry.startDate.plus(range, DateTimeUnit.DAY)
+            List(size = lessonEntry.durationWeeks.toInt()) {
                 startDate.plus(it * 7, DateTimeUnit.DAY)
             }
         }
-
-        return registryService.findByLesson(lessonId).let { list ->
-            val students = list.groupBy { it.student }
-            LessonAttendance(lessonId, students.map { entry ->
-                val statuses =
-                    entry.value.groupBy { it.createdAt.date }.mapValues { AttendanceStatus.Attended }.toMutableMap()
-                listDates?.forEach {
-                    if (!statuses.contains(it))
-                        statuses[it] = AttendanceStatus.Missing
-                }
-                studentsService.findByUsername(entry.key)?.let { student ->
-                    LessonAttendance.StudentAttendance(
-                        student,
-                        statuses.toMap()
+        val groups = lesson?.groups?.map { it to studentsService.findByGroup(it) }
+        return LessonAttendance(lessonId, groups?.map {
+            LessonAttendance.GroupAttendance(
+                it.first, it.second.map {
+                    LessonAttendance.GroupAttendance.StudentAttendance(
+                        it,
+                        registryService.findByStudent(it.username).let {
+                            val statuses =
+                                it.groupBy { it.createdAt.date }.mapValues { AttendanceStatus.Attended }.toMutableMap()
+                            listDates?.forEach {
+                                if (!statuses.contains(it))
+                                    statuses[it] = AttendanceStatus.Missing
+                            }
+                            statuses.toMap()
+                        }
                     )
                 }
-            }.filterNotNull())
-        }
+            )
+        } ?: listOf())
     }
 }
