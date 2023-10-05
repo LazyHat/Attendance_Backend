@@ -27,7 +27,7 @@ fun Route.teacherRouting() {
             get("students") {
                 call.request.queryParameters["lesson"]?.toUIntOrNull()?.let { lessonId ->
                     lessonsRepository.getLessonById(lessonId)?.let {
-                        call.respond(it.groupsList.associateWith { usersRepository.findStudentsByGroup(it) })
+                        call.respond(it.groups.associateWith { usersRepository.findStudentsByGroup(it) })
                     } ?: call.respond(HttpStatusCode.NotFound)
                 } ?: call.respond(HttpStatusCode.BadRequest)
             }

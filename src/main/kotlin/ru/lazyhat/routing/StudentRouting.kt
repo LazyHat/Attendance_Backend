@@ -6,10 +6,10 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import ru.lazyhat.models.Status
 import ru.lazyhat.models.UserPrincipal
 import ru.lazyhat.repository.LessonsRepository
 import ru.lazyhat.repository.UsersRepository
+import java.util.*
 
 fun Route.studentRouting() {
     val usersRepository by inject<UsersRepository>()
@@ -23,15 +23,10 @@ fun Route.studentRouting() {
                 } ?: call.respond(HttpStatusCode.NotFound)
             }
             get("register") {
-                call.request.queryParameters["token"]?.let { token ->
+                call.request.queryParameters["token"]?.let { UUID.fromString(it) }?.let { token ->
                     val principal = call.principal<UserPrincipal.StudentPrincipal>()!!
                     lessonsRepository.getTokenInfo(token)?.let { lessonToken ->
-                        usersRepository.updateStudentStatus(principal.username, Status.InLesson).let {
-                            if (it)
-                                call.respond(HttpStatusCode.OK)
-                            else
-                                call.respond(HttpStatusCode.InternalServerError)
-                        }
+                        TODO()
                     } ?: call.respond(HttpStatusCode.NotFound)
                 } ?: call.respond(HttpStatusCode.Forbidden)
             }

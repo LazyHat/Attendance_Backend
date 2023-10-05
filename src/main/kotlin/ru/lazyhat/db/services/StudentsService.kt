@@ -7,7 +7,6 @@ import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.lazyhat.Constants
-import ru.lazyhat.models.Status
 import ru.lazyhat.models.Student
 import ru.lazyhat.models.StudentCreate
 
@@ -24,9 +23,8 @@ interface StudentsService {
 class StudentsServiceImpl(database: Database) : StudentsService {
     private object Students : Table() {
         val username = varchar("username", Constants.Length.username)
-        val password = varchar("password", Constants.Length.password)
         val fullName = varchar("full_name", Constants.Length.fullname)
-        val status = enumeration("status", Status::class).clientDefault { Status.Idle }
+        val password = varchar("password", Constants.Length.password)
         val groupId = varchar("group", Constants.Length.group)
 
         override val primaryKey = PrimaryKey(username)
@@ -42,7 +40,6 @@ class StudentsServiceImpl(database: Database) : StudentsService {
         this[Students.username],
         this[Students.fullName],
         this[Students.password],
-        this[Students.status],
         this[Students.groupId]
     )
 
@@ -50,7 +47,6 @@ class StudentsServiceImpl(database: Database) : StudentsService {
         this[Students.username] = student.username
         this[Students.fullName] = student.fullName
         this[Students.password] = student.password
-        this[Students.status] = student.status
         this[Students.groupId] = student.groupId
     }
 

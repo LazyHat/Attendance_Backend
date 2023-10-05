@@ -21,8 +21,8 @@ interface TeachersService {
 class TeachersServiceImpl(database: Database) : TeachersService {
     private object Teachers : Table() {
         val username = varchar("username", Constants.Length.username)
-        val password = varchar("password", Constants.Length.password)
         val fullName = varchar("full_name", Constants.Length.fullname)
+        val password = varchar("password", Constants.Length.password)
         override val primaryKey = PrimaryKey(username)
     }
 

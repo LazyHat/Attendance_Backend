@@ -12,11 +12,13 @@ interface AdminRepository {
     suspend fun getAllLessons(): List<Lesson>
     suspend fun getLessonById(id: UInt): Lesson?
     suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean
+    suspend fun getLessonAttendance(id: UInt): LessonAttendance
     suspend fun getAllTeachers(): List<Teacher>
     suspend fun getAllStudents(): List<Student>
 }
 
 class AdminRepositoryImpl(
+    private val registryRepository: RegistryRepository,
     private val teachersService: TeachersService,
     private val studentsService: StudentsService,
     private val lessonsService: LessonsService,
@@ -26,12 +28,16 @@ class AdminRepositoryImpl(
     override fun validateSuperUser(credentials: Credentials): Boolean = credentials == superUser
     override fun createUserToken(credentials: Credentials): String =
         jwtAuth.generateToken(credentials.username, Access.Admin, credentials.password)
+
     override suspend fun getAllLessons(): List<Lesson> = lessonsService.getAll()
     override suspend fun getLessonById(id: UInt): Lesson? = lessonsService.findById(id)
     override suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean = lessonsService.create(lessonUpdate)
+    override suspend fun getLessonAttendance(id: UInt): LessonAttendance = registryRepository.getAttendanceByLesson(id)
+
     override suspend fun getAllTeachers(): List<Teacher> {
         TODO("Not yet implemented")
     }
+
     override suspend fun getAllStudents(): List<Student> {
         TODO("Not yet implemented")
     }

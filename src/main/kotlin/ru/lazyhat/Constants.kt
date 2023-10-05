@@ -7,7 +7,7 @@ object Constants {
     object Length {
         val username = 50
         val password = 32
-        val group = 10
+        val group = 8
         val fullname = 100
         val title = 100
         val groupsList = 20

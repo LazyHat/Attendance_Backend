@@ -5,6 +5,7 @@ import ru.lazyhat.db.services.LessonsService
 import ru.lazyhat.models.Lesson
 import ru.lazyhat.models.LessonToken
 import ru.lazyhat.models.LessonUpdate
+import java.util.*
 
 interface LessonsRepository {
     suspend fun createLesson(lesson: LessonUpdate): Boolean
@@ -12,8 +13,8 @@ interface LessonsRepository {
     suspend fun getLessonsByGroup(group: String): List<Lesson>
     suspend fun getLessonById(id: UInt): Lesson?
     suspend fun createToken(id: UInt): LessonToken
-    suspend fun getTokenInfo(id: String): LessonToken?
-    suspend fun getLessonByToken(id: String): Lesson?
+    suspend fun getTokenInfo(id: UUID): LessonToken?
+    suspend fun getLessonByToken(id: UUID): Lesson?
 }
 
 class LessonsRepositoryImpl(
@@ -30,9 +31,9 @@ class LessonsRepositoryImpl(
     override suspend fun getLessonById(id: UInt): Lesson? = lessonsService.findById(id)
     override suspend fun createToken(id: UInt): LessonToken = lessonTokensService.create(id)
 
-    override suspend fun getTokenInfo(id: String): LessonToken? = lessonTokensService.find(id)
+    override suspend fun getTokenInfo(id: UUID): LessonToken? = lessonTokensService.find(id)
 
-    override suspend fun getLessonByToken(id: String): Lesson? = lessonTokensService.find(id)?.let {
+    override suspend fun getLessonByToken(id: UUID): Lesson? = lessonTokensService.find(id)?.let {
         lessonsService.findById(it.lessonId)
     }
 }

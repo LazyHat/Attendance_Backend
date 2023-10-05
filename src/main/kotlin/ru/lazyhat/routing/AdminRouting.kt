@@ -37,12 +37,19 @@ fun Route.adminRouting() {
                         call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
                     }
                 }
-                get("{id}") {
-                    call.parameters["id"]?.toUIntOrNull()?.let {
-                        adminRepository.getLessonById(it)?.let {
-                            call.respond(it)
-                        } ?: call.respond(HttpStatusCode.NoContent)
-                    } ?: call.respond(HttpStatusCode.BadRequest)
+                route("{id}") {
+                    get {
+                        call.parameters["id"]?.toUIntOrNull()?.let {
+                            adminRepository.getLessonById(it)?.let {
+                                call.respond(it)
+                            } ?: call.respond(HttpStatusCode.NoContent)
+                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    }
+                    get("attendance") {
+                        call.parameters["id"]?.toUIntOrNull()?.let {
+                            call.respond(adminRepository.getLessonAttendance(it))
+                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    }
                 }
             }
         }

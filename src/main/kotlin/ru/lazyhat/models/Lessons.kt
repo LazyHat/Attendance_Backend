@@ -1,41 +1,42 @@
 package ru.lazyhat.models
 
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.Serializable
-import kotlin.time.Duration
 
 @Serializable
 data class Lesson(
     val id: UInt,
-    val username: String,
+    val teacher: String,
     val title: String,
     val dayOfWeek: DayOfWeek,
-    val start: LocalTime,
-    val duration: Duration,
-    val groupsList: Set<String>
+    val startTime: LocalTime,
+    val durationHours: UInt,
+    val startDate: LocalDate,
+    val durationWeeks: UInt,
+    val groups: Set<String>
 )
 
 @Serializable
 data class LessonUpdate(
-    val username: String,
+    val teacher: String,
     val title: String,
     val dayOfWeek: DayOfWeek,
-    val start: LocalTime,
-    val duration: Duration,
-    val groupsList: Set<String>
+    val startTime: LocalTime,
+    val durationHours: UInt,
+    val startDate: LocalDate,
+    val durationWeeks: UInt,
+    val groups: Set<String>
 )
 
 @Serializable
 data class LessonCreate(
     val title: String,
     val dayOfWeek: DayOfWeek,
-    val start: LocalTime,
-    val duration: Duration,
-    val groupsList: Set<String>
-)
-
-
-fun LessonCreate.toLessonUpdate(username: String) = LessonUpdate(
-    username, title, dayOfWeek, start, duration, groupsList
+    val startTime: LocalTime,
+    val durationHours: UInt,
+    val startDate: LocalDate,
+    val durationWeeks: UInt,
+    val groups: Set<String>
 )

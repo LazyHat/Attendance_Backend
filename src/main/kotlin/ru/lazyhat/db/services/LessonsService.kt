@@ -6,7 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.kotlin.datetime.duration
+import org.jetbrains.exposed.sql.kotlin.datetime.date
 import org.jetbrains.exposed.sql.kotlin.datetime.time
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -28,12 +28,14 @@ interface LessonsService {
 class LessonsServiceImpl(database: Database) : LessonsService {
     private object Lessons : Table() {
         val id = uinteger("id").autoIncrement()
-        val username = varchar("username", Constants.Length.username)
+        val teacher = varchar("teacher", Constants.Length.username)
         val title = varchar("title", Constants.Length.title)
-        val groups = varchar("groups", Constants.Length.groupsList)
         val dayOfWeek = enumeration<DayOfWeek>("day_of_week")
-        val start = time("start_time")
-        val duration = duration("duration")
+        val startTime = time("start_time")
+        val durationHours = uinteger("duration_hours")
+        val startDate = date("start_date")
+        val durationWeeks = uinteger("duration_weeks")
+        val groups = varchar("groups", Constants.Length.groupsList)
         override val primaryKey = PrimaryKey(id)
     }
 
@@ -42,7 +44,6 @@ class LessonsServiceImpl(database: Database) : LessonsService {
             SchemaUtils.create(Lessons)
         }
     }
-
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
@@ -64,11 +65,11 @@ class LessonsServiceImpl(database: Database) : LessonsService {
     }
 
     override suspend fun findByUsername(username: String): List<Lesson> = dbQuery {
-        Lessons.select { Lessons.username eq username }.map { it.toLesson() }
+        Lessons.select { Lessons.teacher eq username }.map { it.toLesson() }
     }
 
     override suspend fun findByGroup(group: String): List<Lesson> = dbQuery {
-        Lessons.selectAll().map { it.toLesson() }.filter { it.groupsList.contains(group) }
+        Lessons.selectAll().map { it.toLesson() }.filter { it.groups.contains(group) }
     }
 
     override suspend fun update(id: UInt, new: (old: LessonUpdate?) -> LessonUpdate): Boolean = dbQuery {
@@ -83,32 +84,38 @@ class LessonsServiceImpl(database: Database) : LessonsService {
     } == 1
 
     private fun UpdateBuilder<Int>.applyLesson(lesson: LessonUpdate) = this.apply {
+        this[Lessons.teacher] = lesson.teacher
         this[Lessons.title] = lesson.title
-        this[Lessons.start] = lesson.start
-        this[Lessons.duration] = lesson.duration
         this[Lessons.dayOfWeek] = lesson.dayOfWeek
-        this[Lessons.username] = lesson.username
-        this[Lessons.groups] = Json.encodeToString(lesson.groupsList)
+        this[Lessons.startTime] = lesson.startTime
+        this[Lessons.durationHours] = lesson.durationHours
+        this[Lessons.startDate] = lesson.startDate
+        this[Lessons.durationWeeks] = lesson.durationWeeks
+        this[Lessons.groups] = Json.encodeToString(lesson.groups)
     }
 
     private fun ResultRow.toLesson(): Lesson = this.let {
         Lesson(
             it[Lessons.id],
-            it[Lessons.username],
+            it[Lessons.teacher],
             it[Lessons.title],
             it[Lessons.dayOfWeek],
-            it[Lessons.start],
-            it[Lessons.duration],
+            it[Lessons.startTime],
+            it[Lessons.durationHours],
+            it[Lessons.startDate],
+            it[Lessons.durationWeeks],
             Json.decodeFromString(it[Lessons.groups])
         )
     }
 
     private fun Lesson.toLessonUpdate(): LessonUpdate = LessonUpdate(
-        username,
+        teacher,
         title,
         dayOfWeek,
-        start,
-        duration,
-        groupsList
+        startTime,
+        durationHours,
+        startDate,
+        durationWeeks,
+        groups
     )
 }

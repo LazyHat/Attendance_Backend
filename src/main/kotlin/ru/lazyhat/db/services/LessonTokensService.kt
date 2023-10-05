@@ -1,8 +1,9 @@
 package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.datetime.*
+import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
@@ -17,25 +18,23 @@ import java.util.*
 
 interface LessonTokensService {
     suspend fun create(lessonId: UInt): LessonToken
-    suspend fun find(id: String): LessonToken?
+    suspend fun find(id: UUID): LessonToken?
 }
 
 class LessonTokensServiceImpl(database: Database) : LessonTokensService {
-    private object QrCodeTokens : Table() {
+    private object LessonTokens : Table() {
         val id = uuid("id").clientDefault { UUID.randomUUID() }
         val lessonId = uinteger("lesson_id")
         val expires =
             datetime("expires").clientDefault {
-                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime()
-                    .plusSeconds(Constants.TokensLives.lesson.inWholeSeconds)
-                    .toKotlinLocalDateTime()
+                Clock.System.now().plus(Constants.TokensLives.lesson).toLocalDateTime(TimeZone.currentSystemDefault())
             }
         override val primaryKey = PrimaryKey(id)
     }
 
     init {
         transaction(database) {
-            SchemaUtils.create(QrCodeTokens)
+            SchemaUtils.create(LessonTokens)
         }
     }
 
@@ -43,18 +42,18 @@ class LessonTokensServiceImpl(database: Database) : LessonTokensService {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     private fun UpdateBuilder<Int>.update(lessonId: UInt) {
-        set(QrCodeTokens.lessonId, lessonId)
+        set(LessonTokens.lessonId, lessonId)
     }
 
     private suspend fun delete(lessonId: UInt) {
         dbQuery {
-            QrCodeTokens.deleteWhere { QrCodeTokens.lessonId.eq(lessonId) }
+            LessonTokens.deleteWhere { LessonTokens.lessonId.eq(lessonId) }
         }
     }
 
     private suspend fun checkTokensIfExpires() {
         dbQuery {
-            QrCodeTokens.deleteWhere {
+            LessonTokens.deleteWhere {
                 expires less Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             }
         }
@@ -62,20 +61,20 @@ class LessonTokensServiceImpl(database: Database) : LessonTokensService {
 
     override suspend fun create(lessonId: UInt): LessonToken = dbQuery {
         checkTokensIfExpires()
-        if (QrCodeTokens.select { QrCodeTokens.lessonId eq lessonId }.singleOrNull() != null) {
+        if (LessonTokens.select { LessonTokens.lessonId eq lessonId }.singleOrNull() != null) {
             delete(lessonId)
         }
-        QrCodeTokens.insert {
+        LessonTokens.insert {
             it.update(lessonId)
         }.let {
-            LessonToken(it[QrCodeTokens.id].toString(), it[QrCodeTokens.lessonId], it[QrCodeTokens.expires])
+            LessonToken(it[LessonTokens.id].toString(), it[LessonTokens.lessonId], it[LessonTokens.expires])
         }
     }
 
-    override suspend fun find(id: String): LessonToken? = dbQuery {
+    override suspend fun find(id: UUID): LessonToken? = dbQuery {
         checkTokensIfExpires()
-        QrCodeTokens.select { QrCodeTokens.id eq UUID.fromString(id) }.singleOrNull()?.let {
-            LessonToken(it[QrCodeTokens.id].toString(), it[QrCodeTokens.lessonId], it[QrCodeTokens.expires])
+        LessonTokens.select { LessonTokens.id eq id }.singleOrNull()?.let {
+            LessonToken(it[LessonTokens.id].toString(), it[LessonTokens.lessonId], it[LessonTokens.expires])
         }
     }
 }

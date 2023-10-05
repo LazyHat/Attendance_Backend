@@ -9,11 +9,6 @@ enum class Access {
     Admin
 }
 
-@Serializable
-enum class Status {
-    Idle,
-    InLesson
-}
 
 @Serializable
 data class StudentCreate(
@@ -28,7 +23,6 @@ data class Student(
     val username: String,
     val fullName: String,
     val password: String,
-    val status: Status,
     val groupId: String
 )
 
