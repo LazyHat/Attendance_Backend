@@ -1,6 +1,8 @@
 package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
@@ -19,11 +21,10 @@ interface TeachersService {
 }
 
 class TeachersServiceImpl(database: Database) : TeachersService {
-    private object Teachers : Table() {
-        val username = varchar("username", Constants.Length.username)
+    object Teachers : IdTable<String>() {
+        override val id: Column<EntityID<String>> = varchar("username", Constants.Length.username).entityId()
         val fullName = varchar("full_name", Constants.Length.fullname)
         val password = varchar("password", Constants.Length.password)
-        override val primaryKey = PrimaryKey(username)
     }
 
     init {
@@ -33,13 +34,13 @@ class TeachersServiceImpl(database: Database) : TeachersService {
     }
 
     private fun ResultRow.toTeacher() = Teacher(
-        this[Teachers.username],
+        this[Teachers.id].value,
         this[Teachers.fullName],
         this[Teachers.password]
     )
 
     private fun UpdateBuilder<Int>.applyTeacher(teacher: Teacher) = this.apply {
-        this[Teachers.username] = teacher.username
+        this[Teachers.id] = teacher.username
         this[Teachers.fullName] = teacher.fullName
         this[Teachers.password] = teacher.password
     }
@@ -59,16 +60,16 @@ class TeachersServiceImpl(database: Database) : TeachersService {
     }
 
     override suspend fun find(username: String): Teacher? = dbQuery {
-        Teachers.select { Teachers.username eq username }.singleOrNull()?.toTeacher()
+        Teachers.select { Teachers.id eq username }.singleOrNull()?.toTeacher()
     }
 
     override suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean = dbQuery {
         find(username)?.let { old ->
-            Teachers.update({ Teachers.username eq username }) { it.applyTeacher(new(old)) } == 1
+            Teachers.update({ Teachers.id eq username }) { it.applyTeacher(new(old)) } == 1
         } ?: false
     }
 
     override suspend fun delete(username: String): Boolean = dbQuery {
-        Teachers.deleteWhere { Teachers.username.eq(username) }
+        Teachers.deleteWhere { id eq username }
     } == 1
 }

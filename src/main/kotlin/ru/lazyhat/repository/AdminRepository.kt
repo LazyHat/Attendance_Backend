@@ -14,7 +14,11 @@ interface AdminRepository {
     suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean
     suspend fun getLessonAttendance(id: UInt): LessonAttendance
     suspend fun getAllTeachers(): List<Teacher>
+    suspend fun createTeacher(teacher: Teacher): Boolean
     suspend fun getAllStudents(): List<Student>
+    suspend fun createStudent(form: StudentCreate): Boolean
+    suspend fun deleteStudent(username: String): Boolean
+    suspend fun putSomeStudents(students: List<StudentCreate>): Boolean
 }
 
 class AdminRepositoryImpl(
@@ -33,12 +37,10 @@ class AdminRepositoryImpl(
     override suspend fun getLessonById(id: UInt): Lesson? = lessonsService.findById(id)
     override suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean = lessonsService.create(lessonUpdate)
     override suspend fun getLessonAttendance(id: UInt): LessonAttendance = registryRepository.getAttendanceByLesson(id)
-
-    override suspend fun getAllTeachers(): List<Teacher> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getAllStudents(): List<Student> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getAllTeachers(): List<Teacher> = teachersService.getAll()
+    override suspend fun createTeacher(teacher: Teacher): Boolean = teachersService.create(teacher)
+    override suspend fun getAllStudents(): List<Student> = studentsService.getAll()
+    override suspend fun createStudent(form: StudentCreate): Boolean = studentsService.insert(form)
+    override suspend fun deleteStudent(username: String): Boolean = studentsService.delete(username)
+    override suspend fun putSomeStudents(students: List<StudentCreate>): Boolean = studentsService.insertList(students)
 }

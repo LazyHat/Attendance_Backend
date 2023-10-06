@@ -11,11 +11,13 @@ import ru.lazyhat.models.LessonCreate
 import ru.lazyhat.models.UserPrincipal
 import ru.lazyhat.models.toLessonUpdate
 import ru.lazyhat.repository.LessonsRepository
+import ru.lazyhat.repository.RegistryRepository
 import ru.lazyhat.repository.UsersRepository
 
 fun Route.teacherRouting() {
     val usersRepository by inject<UsersRepository>()
     val lessonsRepository by inject<LessonsRepository>()
+    val registryRepository by inject<RegistryRepository>()
     authenticate("teacher") {
         route("teacher") {
             get("info") {
@@ -65,6 +67,11 @@ fun Route.teacherRouting() {
                                     call.respond(it)
                                 }
                             } //Bad request (lower call already responds it)
+                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    }
+                    get("attendance") {
+                        call.parameters["id"]?.toUIntOrNull()?.let { id ->
+                            call.respond(registryRepository.getAttendanceByLesson(id))
                         } ?: call.respond(HttpStatusCode.BadRequest)
                     }
                 }

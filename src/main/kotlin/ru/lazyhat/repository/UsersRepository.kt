@@ -39,7 +39,7 @@ class UsersRepositoryImpl(
         } else null
 
     override suspend fun registerTeacher(teacher: Teacher): Boolean = teachersService.create(teacher)
-    override suspend fun registerStudent(studentCreate: StudentCreate): Boolean = studentsService.create(studentCreate)
+    override suspend fun registerStudent(studentCreate: StudentCreate): Boolean = studentsService.insert(studentCreate)
     override suspend fun findStudentByUsername(username: String): Student? = studentsService.findByUsername(username)
     override suspend fun findTeacherByUsername(username: String): Teacher? = teachersService.find(username)
     override suspend fun findStudentsByGroup(group: String): List<Student> = studentsService.findByGroup(group)

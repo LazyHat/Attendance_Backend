@@ -14,8 +14,7 @@ data class RegistryRecord(
 
 data class RegistryRecordCreate(
     val lessonId: UInt,
-    val student: String,
-    val createdAt: LocalDateTime
+    val student: String
 )
 
 @Serializable

@@ -1,6 +1,9 @@
 package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.datetime.LocalDateTime
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
@@ -10,6 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import ru.lazyhat.Constants
 import ru.lazyhat.models.RegistryRecord
 import ru.lazyhat.models.RegistryRecordCreate
+import ru.lazyhat.models.now
 import ru.lazyhat.models.toRegistryRecordCreate
 
 interface RegistryService {
@@ -22,12 +26,11 @@ interface RegistryService {
 }
 
 class RegistryServiceImpl(database: Database) : RegistryService {
-    private object Registry : Table() {
-        val id = ulong("id")
+    object Registry : IdTable<ULong>() {
+        override val id: Column<EntityID<ULong>> = ulong("id").autoIncrement().entityId()
         val lessonId = uinteger("lesson_id")
         val student = varchar("student", Constants.Length.username)
-        val createdAt = datetime("created_at")
-        override val primaryKey = PrimaryKey(id)
+        val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
     }
 
     init {
@@ -37,7 +40,7 @@ class RegistryServiceImpl(database: Database) : RegistryService {
     }
 
     private fun ResultRow.toRegistryRecord() = RegistryRecord(
-        this[Registry.id],
+        this[Registry.id].value,
         this[Registry.lessonId],
         this[Registry.student],
         this[Registry.createdAt],
@@ -46,7 +49,6 @@ class RegistryServiceImpl(database: Database) : RegistryService {
     private fun UpdateBuilder<Int>.applyRegistryRecord(registry: RegistryRecordCreate) = this.apply {
         this[Registry.lessonId] = registry.lessonId
         this[Registry.student] = registry.student
-        this[Registry.createdAt] = registry.createdAt
     }
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
@@ -71,11 +73,12 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         Registry.select { Registry.student eq username }.map { it.toRegistryRecord() }
     }
 
-    override suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean = dbQuery {
-        find(id)?.let { old ->
-            Registry.update({ Registry.id eq id }) { it.applyRegistryRecord(new(old.toRegistryRecordCreate())) } == 1
-        } ?: false
-    }
+    override suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean =
+        dbQuery {
+            find(id)?.let { old ->
+                Registry.update({ Registry.id eq id }) { it.applyRegistryRecord(new(old.toRegistryRecordCreate())) } == 1
+            } ?: false
+        }
 
     override suspend fun delete(id: ULong): Boolean = dbQuery {
         Registry.deleteWhere { Registry.id eq id }

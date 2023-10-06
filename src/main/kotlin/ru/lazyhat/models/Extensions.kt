@@ -24,5 +24,4 @@ fun LocalDateTime.Companion.now(): LocalDateTime = Clock.System.now().toLocalDat
 
 fun Duration.roundTo(unit: DurationUnit) = this.toLong(unit).toDuration(unit)
 
-fun RegistryRecord.toRegistryRecordCreate(): RegistryRecordCreate = RegistryRecordCreate(lessonId, student, createdAt)
-fun RegistryRecordCreate.toRegistryRecord(id: ULong): RegistryRecord = RegistryRecord(id, lessonId, student, createdAt)
+fun RegistryRecord.toRegistryRecordCreate(): RegistryRecordCreate = RegistryRecordCreate(lessonId, student)

@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.DayOfWeek
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.date
@@ -26,8 +28,8 @@ interface LessonsService {
 }
 
 class LessonsServiceImpl(database: Database) : LessonsService {
-    private object Lessons : Table() {
-        val id = uinteger("id").autoIncrement()
+    object Lessons : IdTable<UInt>() {
+        override val id: Column<EntityID<UInt>> = uinteger("id").autoIncrement().entityId()
         val teacher = varchar("teacher", Constants.Length.username)
         val title = varchar("title", Constants.Length.title)
         val dayOfWeek = enumeration<DayOfWeek>("day_of_week")
@@ -36,7 +38,6 @@ class LessonsServiceImpl(database: Database) : LessonsService {
         val startDate = date("start_date")
         val durationWeeks = uinteger("duration_weeks")
         val groups = varchar("groups", Constants.Length.groupsList)
-        override val primaryKey = PrimaryKey(id)
     }
 
     init {
@@ -96,7 +97,7 @@ class LessonsServiceImpl(database: Database) : LessonsService {
 
     private fun ResultRow.toLesson(): Lesson = this.let {
         Lesson(
-            it[Lessons.id],
+            it[Lessons.id].value,
             it[Lessons.teacher],
             it[Lessons.title],
             it[Lessons.dayOfWeek],

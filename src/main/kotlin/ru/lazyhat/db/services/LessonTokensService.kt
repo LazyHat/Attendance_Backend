@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
@@ -22,14 +23,12 @@ interface LessonTokensService {
 }
 
 class LessonTokensServiceImpl(database: Database) : LessonTokensService {
-    private object LessonTokens : Table() {
-        val id = uuid("id").clientDefault { UUID.randomUUID() }
+    object LessonTokens : UUIDTable() {
         val lessonId = uinteger("lesson_id")
         val expires =
             datetime("expires").clientDefault {
                 Clock.System.now().plus(Constants.TokensLives.lesson).toLocalDateTime(TimeZone.currentSystemDefault())
             }
-        override val primaryKey = PrimaryKey(id)
     }
 
     init {

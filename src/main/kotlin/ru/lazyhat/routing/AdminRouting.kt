@@ -52,6 +52,25 @@ fun Route.adminRouting() {
                     }
                 }
             }
+            route("students") {
+                get {
+                    call.respond(adminRepository.getAllStudents())
+                }
+                post {
+                    adminRepository.createStudent(call.receive()).let {
+                        call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
+                    }
+                }
+                route("{username}") {
+                    delete {
+                        call.parameters["username"]?.let { username ->
+                            adminRepository.deleteStudent(username).let {
+                                call.respond(if (it) HttpStatusCode.OK else HttpStatusCode.NotFound)
+                            }
+                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    }
+                }
+            }
         }
     }
 }

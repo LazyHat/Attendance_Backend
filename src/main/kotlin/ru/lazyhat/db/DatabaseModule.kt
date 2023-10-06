@@ -23,12 +23,12 @@ fun Application.configureDatabaseModule(): Module {
     )
     return module {
         single<StudentsService> { StudentsServiceImpl(database) }
-        single<LessonsService> { LessonsServiceImpl(database) }
         single<TeachersService> { TeachersServiceImpl(database) }
+        single<LessonsService> { LessonsServiceImpl(database) }
         single<LessonTokensService> { LessonTokensServiceImpl(database) }
+        single<RegistryService> { RegistryServiceImpl(database) }
         single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
         single<LessonsRepository> { LessonsRepositoryImpl(get(), get()) }
-        single<RegistryService> { RegistryServiceImpl(database) }
         single<RegistryRepository> { RegistryRepositoryImpl(get(), get(), get()) }
         single<AdminRepository> {
             AdminRepositoryImpl(

@@ -10,7 +10,7 @@ object Constants {
         val group = 8
         val fullname = 100
         val title = 100
-        val groupsList = 20
+        val groupsList = 30
     }
     object TokensLives {
         val jwt = 8.hours
