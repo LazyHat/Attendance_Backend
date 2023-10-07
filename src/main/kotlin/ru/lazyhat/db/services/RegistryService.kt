@@ -1,19 +1,18 @@
 package ru.lazyhat.db.services
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.datetime.LocalDateTime
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.kotlin.datetime.datetime
+import org.jetbrains.exposed.sql.kotlin.datetime.date
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.lazyhat.Constants
+import ru.lazyhat.models.AttendanceStatus
 import ru.lazyhat.models.RegistryRecord
 import ru.lazyhat.models.RegistryRecordCreate
-import ru.lazyhat.models.now
 import ru.lazyhat.models.toRegistryRecordCreate
 
 interface RegistryService {
@@ -23,6 +22,7 @@ interface RegistryService {
     suspend fun findByStudent(username: String): List<RegistryRecord>
     suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean
     suspend fun delete(id: ULong): Boolean
+    suspend fun updateOrDelete(update: RegistryRecordCreate): Boolean
 }
 
 class RegistryServiceImpl(database: Database) : RegistryService {
@@ -30,7 +30,8 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         override val id: Column<EntityID<ULong>> = ulong("id").autoIncrement().entityId()
         val lessonId = uinteger("lesson_id")
         val student = varchar("student", Constants.Length.username)
-        val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
+        val date = date("date")
+        val status = enumeration<AttendanceStatus>("status")
     }
 
     init {
@@ -43,7 +44,8 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         this[Registry.id].value,
         this[Registry.lessonId],
         this[Registry.student],
-        this[Registry.createdAt],
+        this[Registry.date],
+        this[Registry.status]
     )
 
     private fun UpdateBuilder<Int>.applyRegistryRecord(registry: RegistryRecordCreate) = this.apply {
@@ -51,15 +53,13 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         this[Registry.student] = registry.student
     }
 
-    private suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+    private suspend fun <T> dbQuery(block: suspend () -> T): T = newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    override suspend fun create(registry: RegistryRecordCreate): Boolean =
-        dbQuery {
-            Registry.insert {
-                it.applyRegistryRecord(registry)
-            }.insertedCount == 1
-        }
+    override suspend fun create(registry: RegistryRecordCreate): Boolean = dbQuery {
+        Registry.insert {
+            it.applyRegistryRecord(registry)
+        }.insertedCount == 1
+    }
 
     override suspend fun find(id: ULong): RegistryRecord? = dbQuery {
         Registry.select { Registry.id eq id }.singleOrNull()?.toRegistryRecord()
@@ -83,4 +83,15 @@ class RegistryServiceImpl(database: Database) : RegistryService {
     override suspend fun delete(id: ULong): Boolean = dbQuery {
         Registry.deleteWhere { Registry.id eq id }
     } == 1
+
+    override suspend fun updateOrDelete(update: RegistryRecordCreate): Boolean = dbQuery {
+        val operation =
+            (Registry.date eq update.date)
+                .and(Registry.lessonId eq update.lessonId)
+                .and(Registry.student eq update.student)
+        if (update.attendanceStatus != AttendanceStatus.Missing)
+            Registry.update({ operation }) { it[status] = update.attendanceStatus } == 1
+        else
+            Registry.deleteWhere { operation } == 1
+    }
 }

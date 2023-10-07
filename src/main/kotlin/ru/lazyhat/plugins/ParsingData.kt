@@ -45,7 +45,7 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "English",
-                    DayOfWeek.FRIDAY,
+                    DayOfWeek.SATURDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),
@@ -57,7 +57,7 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "Infomatic",
-                    DayOfWeek.FRIDAY,
+                    DayOfWeek.SATURDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),
@@ -69,7 +69,7 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "WEB",
-                    DayOfWeek.FRIDAY,
+                    DayOfWeek.SATURDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),

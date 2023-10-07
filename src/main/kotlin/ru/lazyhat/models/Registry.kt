@@ -1,20 +1,43 @@
 package ru.lazyhat.models
 
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 
+@Serializable
 data class RegistryRecord(
     val id: ULong,
     val lessonId: UInt,
     val student: String,
-    val createdAt: LocalDateTime
+    val date: LocalDate,
+    val status: AttendanceStatus
 )
 
+@Serializable
 data class RegistryRecordCreate(
     val lessonId: UInt,
-    val student: String
+    val student: String,
+    val date: LocalDate,
+    val attendanceStatus: AttendanceStatus
+)
+
+@Serializable
+data class RegistryRecordUpdate(
+    val recordsToUpdate: List<Parameters>,
+    val newStatus: AttendanceStatus
+) {
+    @Serializable
+    data class Parameters(
+        val lessonId: UInt,
+        val student: String,
+        val date: LocalDate
+    )
+}
+
+@Serializable
+data class RegistryRecordCreateStudent(
+    val lessonId: UInt,
+    val student: String,
 )
 
 @Serializable

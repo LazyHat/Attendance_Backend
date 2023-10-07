@@ -76,7 +76,9 @@ fun Route.teacherRouting() {
                             } ?: call.respond(HttpStatusCode.BadRequest)
                         }
                         patch {
-                            call.parameters["id"]
+                            call.parameters["id"]?.toUIntOrNull()?.let { id ->
+                                call.respond(registryRepository.upsertListRecords(call.receive()))
+                            } ?: call.respond(HttpStatusCode.BadRequest)
                         }
                     }
                 }
