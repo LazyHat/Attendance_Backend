@@ -69,10 +69,15 @@ fun Route.teacherRouting() {
                             } //Bad request (lower call already responds it)
                         } ?: call.respond(HttpStatusCode.BadRequest)
                     }
-                    get("attendance") {
-                        call.parameters["id"]?.toUIntOrNull()?.let { id ->
-                            call.respond(registryRepository.getAttendanceByLesson(id))
-                        } ?: call.respond(HttpStatusCode.BadRequest)
+                    route("attendance") {
+                        get {
+                            call.parameters["id"]?.toUIntOrNull()?.let { id ->
+                                call.respond(registryRepository.getAttendanceByLesson(id))
+                            } ?: call.respond(HttpStatusCode.BadRequest)
+                        }
+                        patch {
+                            call.parameters["id"]
+                        }
                     }
                 }
             }
