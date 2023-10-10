@@ -6,18 +6,24 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.inject
+import ru.lazyhat.lesson.AlreadyExistsException
+import ru.lazyhat.lesson.AttendanceController
 import ru.lazyhat.models.LessonCreate
+import ru.lazyhat.models.RegistryRecordUpdate
 import ru.lazyhat.models.UserPrincipal
 import ru.lazyhat.models.toLessonUpdate
 import ru.lazyhat.repository.LessonsRepository
-import ru.lazyhat.repository.RegistryRepository
 import ru.lazyhat.repository.UsersRepository
 
 fun Route.teacherRouting() {
     val usersRepository by inject<UsersRepository>()
     val lessonsRepository by inject<LessonsRepository>()
-    val registryRepository by inject<RegistryRepository>()
+    val attendanceController by inject<AttendanceController>()
     authenticate("teacher") {
         route("teacher") {
             get("info") {
@@ -72,13 +78,38 @@ fun Route.teacherRouting() {
                     route("attendance") {
                         get {
                             call.parameters["id"]?.toUIntOrNull()?.let { id ->
-                                call.respond(registryRepository.getAttendanceByLesson(id))
+                                call.respond(attendanceController.getAllAttendacnce(id))
                             } ?: call.respond(HttpStatusCode.BadRequest)
                         }
                         patch {
                             call.parameters["id"]?.toUIntOrNull()?.let { id ->
-                                call.respond(registryRepository.upsertListRecords(call.receive()))
+                                call.respond(attendanceController.updateAttendance(call.receive()))
                             } ?: call.respond(HttpStatusCode.BadRequest)
+                        }
+                        webSocket {
+                            val principal = call.principal<UserPrincipal.TeacherPrincipal>()
+                            if (principal == null) {
+                                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No authorized"))
+                                return@webSocket
+                            }
+                            try {
+                                attendanceController.onJoin(
+                                    principal.username,
+                                    this
+                                )
+                                incoming.consumeEach { frame ->
+                                    if (frame is Frame.Text) {
+                                        val update = Json.decodeFromString<RegistryRecordUpdate>(frame.readText())
+                                        attendanceController.updateAttendance(update)
+                                    }
+                                }
+                            } catch (e: AlreadyExistsException) {
+                                call.respond(HttpStatusCode.Conflict)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                attendanceController.tryDisconnect(principal.username)
+                            }
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package ru.lazyhat.repository
 
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 import ru.lazyhat.db.services.LessonsService
 import ru.lazyhat.db.services.RegistryService
@@ -23,21 +24,17 @@ class RegistryRepositoryImpl(
     override suspend fun writeToRegistry(registryCreate: RegistryRecordCreate): Boolean =
         registryService.create(registryCreate)
 
-    override suspend fun writeToRegistryWithStudent(registryRecordCreateStudent: RegistryRecordCreateStudent): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun writeToRegistryWithStudent(registryRecordCreateStudent: RegistryRecordCreateStudent): Boolean =
+        registryService.create(
+            RegistryRecordCreate(
+                registryRecordCreateStudent.lessonId,
+                registryRecordCreateStudent.student,
+                LocalDateTime.now().date,
+                AttendanceStatus.Attended
+            )
+        )
 
-    override suspend fun upsertListRecords(update: RegistryRecordUpdate): Boolean {
-        var count = 0
-        update.recordsToUpdate.forEach {
-            registryService.updateOrDelete(RegistryRecordCreate(it.lessonId, it.student, it.date, update.newStatus))
-                .let {
-                    if (it)
-                        count++
-                }
-        }
-        return count == update.recordsToUpdate.count()
-    }
+    override suspend fun upsertListRecords(update: RegistryRecordUpdate): Boolean = registryService.upsertOrDelete(update)
 
     override suspend fun getAttendanceByLesson(lessonId: UInt): LessonAttendance {
         val lesson = lessonsService.findById(lessonId)

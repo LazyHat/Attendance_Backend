@@ -6,17 +6,17 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import ru.lazyhat.lesson.AttendanceController
 import ru.lazyhat.models.RegistryRecordCreateStudent
 import ru.lazyhat.models.UserPrincipal
 import ru.lazyhat.repository.LessonsRepository
-import ru.lazyhat.repository.RegistryRepository
 import ru.lazyhat.repository.UsersRepository
 import java.util.*
 
 fun Route.studentRouting() {
     val usersRepository by inject<UsersRepository>()
     val lessonsRepository by inject<LessonsRepository>()
-    val registryRepository by inject<RegistryRepository>()
+    val attendanceController by inject<AttendanceController>()
     authenticate("student") {
         route("student") {
             get("info") {
@@ -29,7 +29,7 @@ fun Route.studentRouting() {
                 call.request.queryParameters["token"]?.let { UUID.fromString(it) }?.let { token ->
                     val principal = call.principal<UserPrincipal.StudentPrincipal>()!!
                     lessonsRepository.getTokenInfo(token)?.let { lessonToken ->
-                        registryRepository.writeToRegistryWithStudent(
+                        attendanceController.registerStudentToLesson(
                             RegistryRecordCreateStudent(
                                 lessonToken.lessonId,
                                 principal.username

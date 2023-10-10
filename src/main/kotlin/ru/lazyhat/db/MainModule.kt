@@ -5,10 +5,11 @@ import org.jetbrains.exposed.sql.Database
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.lazyhat.db.services.*
+import ru.lazyhat.lesson.AttendanceController
 import ru.lazyhat.models.Credentials
 import ru.lazyhat.repository.*
 
-fun Application.configureDatabaseModule(): Module {
+fun Application.configureMainModule(): Module {
     val driverClassName = environment.config.property("storage.driverClassName").getString()
     val jdbcUrl = environment.config.property("storage.jdbcURL").getString()
     val dbUser = environment.config.property("storage.user").getString()
@@ -30,6 +31,7 @@ fun Application.configureDatabaseModule(): Module {
         single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
         single<LessonsRepository> { LessonsRepositoryImpl(get(), get()) }
         single<RegistryRepository> { RegistryRepositoryImpl(get(), get(), get()) }
+        single<AttendanceController> { AttendanceController(get()) }
         single<AdminRepository> {
             AdminRepositoryImpl(
                 get(),

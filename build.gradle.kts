@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "ru.lazyhat"
-version = "0.0.1"
+version = "1.0"
 
 application {
     mainClass.set("ru.lazyhat.ApplicationKt")
@@ -35,6 +35,8 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("io.ktor:ktor-server-websockets")
+    implementation("io.ktor:ktor-server-sessions")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-okhttp")

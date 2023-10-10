@@ -7,7 +7,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import ru.lazyhat.db.configureDatabaseModule
+import ru.lazyhat.db.configureMainModule
 import ru.lazyhat.plugins.configureAuth
 import ru.lazyhat.plugins.configureAuthModule
 import ru.lazyhat.plugins.configureParsingData
@@ -23,7 +23,7 @@ fun Application.module() {
     install(Koin) {
         slf4jLogger()
         modules(
-            configureDatabaseModule(),
+            configureMainModule(),
             configureAuthModule()
         )
     }

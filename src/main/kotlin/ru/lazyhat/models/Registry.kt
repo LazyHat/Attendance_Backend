@@ -23,12 +23,12 @@ data class RegistryRecordCreate(
 
 @Serializable
 data class RegistryRecordUpdate(
+    val lessonId: UInt,
     val recordsToUpdate: List<Parameters>,
     val newStatus: AttendanceStatus
 ) {
     @Serializable
     data class Parameters(
-        val lessonId: UInt,
         val student: String,
         val date: LocalDate
     )
@@ -43,7 +43,9 @@ data class RegistryRecordCreateStudent(
 @Serializable
 enum class AttendanceStatus {
     Attended,
-    Missing
+    Missing,
+    ValidReason,
+    Disease
 }
 
 @Serializable

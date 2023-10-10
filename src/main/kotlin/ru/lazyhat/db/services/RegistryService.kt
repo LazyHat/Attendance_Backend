@@ -10,10 +10,7 @@ import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.lazyhat.Constants
-import ru.lazyhat.models.AttendanceStatus
-import ru.lazyhat.models.RegistryRecord
-import ru.lazyhat.models.RegistryRecordCreate
-import ru.lazyhat.models.toRegistryRecordCreate
+import ru.lazyhat.models.*
 
 interface RegistryService {
     suspend fun create(registry: RegistryRecordCreate): Boolean
@@ -22,7 +19,7 @@ interface RegistryService {
     suspend fun findByStudent(username: String): List<RegistryRecord>
     suspend fun update(id: ULong, new: (old: RegistryRecordCreate) -> RegistryRecordCreate): Boolean
     suspend fun delete(id: ULong): Boolean
-    suspend fun updateOrDelete(update: RegistryRecordCreate): Boolean
+    suspend fun upsertOrDelete(update: RegistryRecordUpdate): Boolean
 }
 
 class RegistryServiceImpl(database: Database) : RegistryService {
@@ -51,6 +48,8 @@ class RegistryServiceImpl(database: Database) : RegistryService {
     private fun UpdateBuilder<Int>.applyRegistryRecord(registry: RegistryRecordCreate) = this.apply {
         this[Registry.lessonId] = registry.lessonId
         this[Registry.student] = registry.student
+        this[Registry.date] = registry.date
+        this[Registry.status] = registry.attendanceStatus
     }
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T = newSuspendedTransaction(Dispatchers.IO) { block() }
@@ -84,14 +83,31 @@ class RegistryServiceImpl(database: Database) : RegistryService {
         Registry.deleteWhere { Registry.id eq id }
     } == 1
 
-    override suspend fun updateOrDelete(update: RegistryRecordCreate): Boolean = dbQuery {
-        val operation =
-            (Registry.date eq update.date)
-                .and(Registry.lessonId eq update.lessonId)
-                .and(Registry.student eq update.student)
-        if (update.attendanceStatus != AttendanceStatus.Missing)
-            Registry.update({ operation }) { it[status] = update.attendanceStatus } == 1
-        else
-            Registry.deleteWhere { operation } == 1
+    override suspend fun upsertOrDelete(update: RegistryRecordUpdate): Boolean = dbQuery {
+        var count = 0
+        update.recordsToUpdate.forEach { parameters ->
+            val operation =
+                (Registry.date eq parameters.date)
+                    .and(Registry.lessonId eq update.lessonId)
+                    .and(Registry.student eq parameters.student)
+
+            if (update.newStatus != AttendanceStatus.Missing)
+                if (Registry.select { operation }.empty())
+                    Registry.insert {
+                        it.applyRegistryRecord(
+                            RegistryRecordCreate(
+                                update.lessonId,
+                                parameters.student,
+                                parameters.date,
+                                update.newStatus
+                            )
+                        )
+                    }.let{count += it.insertedCount}
+                else
+                    Registry.update({ operation }) { it[status] = update.newStatus }.let { count += it }
+            else
+                Registry.deleteWhere { operation }.let {count += it}
+        }
+        count == update.recordsToUpdate.count()
     }
 }
