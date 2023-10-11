@@ -30,19 +30,17 @@ class AttendanceController(
         val lesson = lessonsRepository.getLessonById(record.lessonId)
         if (lesson != null)
             if (registryRepository.writeToRegistryWithStudent(record))
-                teachers[lesson.teacher]?.let {
-                    it.socket.send(
-                        Frame.Text(
-                            Json.encodeToString(
-                                UpdateAttendance(
-                                    record.student,
-                                    date,
-                                    AttendanceStatus.Attended
-                                )
+                teachers[lesson.teacher]?.socket?.send(
+                    Frame.Text(
+                        Json.encodeToString(
+                            UpdateAttendance(
+                                record.student,
+                                date,
+                                AttendanceStatus.Attended
                             )
                         )
                     )
-                }
+                )
     }
 
     suspend fun updateAttendance(update: RegistryRecordUpdate) {

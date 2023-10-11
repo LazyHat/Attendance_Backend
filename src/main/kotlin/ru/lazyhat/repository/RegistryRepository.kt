@@ -39,15 +39,15 @@ class RegistryRepositoryImpl(
     override suspend fun getAttendanceByLesson(lessonId: UInt): LessonAttendance {
         val lesson = lessonsService.findById(lessonId)
         val listDates = lesson?.let { lessonEntry ->
-            val range = (lessonEntry.dayOfWeek.ordinal - lessonEntry.startDate.dayOfWeek.ordinal).let {
+            val plus = (lessonEntry.dayOfWeek.ordinal - lessonEntry.startDate.dayOfWeek.ordinal).let {
                 if (it < 0)
-                    it + 6
+                    it+7
                 else
                     it
             }
-            val startDate = lessonEntry.startDate.plus(range, DateTimeUnit.DAY)
+            val startDateDOW = lessonEntry.startDate.plus(plus, DateTimeUnit.DAY)
             List(size = lessonEntry.durationWeeks.toInt()) {
-                startDate.plus(it * 7, DateTimeUnit.DAY)
+                startDateDOW.plus(it * 7, DateTimeUnit.DAY)
             }
         } ?: listOf()
         val groups = lesson?.groups?.map { it to studentsService.findByGroup(it) }

@@ -31,7 +31,7 @@ fun Application.configureMainModule(): Module {
         single<UsersRepository> { UsersRepositoryImpl(get(), get(), get()) }
         single<LessonsRepository> { LessonsRepositoryImpl(get(), get()) }
         single<RegistryRepository> { RegistryRepositoryImpl(get(), get(), get()) }
-        single<AttendanceController> { AttendanceController(get()) }
+        single<AttendanceController> { AttendanceController(get(),get()) }
         single<AdminRepository> {
             AdminRepositoryImpl(
                 get(),

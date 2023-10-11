@@ -45,7 +45,7 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "English",
-                    DayOfWeek.SATURDAY,
+                    DayOfWeek.WEDNESDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),
@@ -57,7 +57,7 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "Infomatic",
-                    DayOfWeek.SATURDAY,
+                    DayOfWeek.WEDNESDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),
@@ -69,7 +69,79 @@ fun Application.configureParsingData() {
                 LessonUpdate(
                     "lazy",
                     "WEB",
+                    DayOfWeek.WEDNESDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.MONDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.TUESDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.THURSDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.FRIDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
                     DayOfWeek.SATURDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    LocalDate(2023, 9, 1),
+                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.SUNDAY,
                     LocalTime(0, 0),
                     23U,
                     LocalDate(2023, 9, 1),
