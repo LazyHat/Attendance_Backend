@@ -35,6 +35,7 @@ fun Route.studentRouting() {
                                 principal.username
                             )
                         )
+                        call.respond(HttpStatusCode.OK)
                     } ?: call.respond(HttpStatusCode.NotFound)
                 } ?: call.respond(HttpStatusCode.Forbidden)
             }
