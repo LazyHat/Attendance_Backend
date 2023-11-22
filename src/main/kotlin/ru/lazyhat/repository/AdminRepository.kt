@@ -12,6 +12,7 @@ interface AdminRepository {
     suspend fun getAllLessons(): List<Lesson>
     suspend fun getLessonById(id: UInt): Lesson?
     suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean
+    suspend fun updateLesson(lessonId: UInt, lessonUpdate: LessonUpdate): Boolean
     suspend fun getLessonAttendance(id: UInt): LessonAttendance
     suspend fun getAllTeachers(): List<Teacher>
     suspend fun createTeacher(teacher: Teacher): Boolean
@@ -36,6 +37,9 @@ class AdminRepositoryImpl(
     override suspend fun getAllLessons(): List<Lesson> = lessonsService.getAll()
     override suspend fun getLessonById(id: UInt): Lesson? = lessonsService.findById(id)
     override suspend fun createLesson(lessonUpdate: LessonUpdate): Boolean = lessonsService.create(lessonUpdate)
+    override suspend fun updateLesson(lessonId: UInt, lessonUpdate: LessonUpdate): Boolean =
+        lessonsService.update(lessonId) { lessonUpdate }
+
     override suspend fun getLessonAttendance(id: UInt): LessonAttendance = registryRepository.getAttendanceByLesson(id)
     override suspend fun getAllTeachers(): List<Teacher> = teachersService.getAll()
     override suspend fun createTeacher(teacher: Teacher): Boolean = teachersService.create(teacher)

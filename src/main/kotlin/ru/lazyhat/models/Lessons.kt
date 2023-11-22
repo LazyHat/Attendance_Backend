@@ -13,8 +13,8 @@ data class Lesson(
     val dayOfWeek: DayOfWeek,
     val startTime: LocalTime,
     val durationHours: UInt,
-    val startDate: LocalDate,
     val durationWeeks: UInt,
+    val startDate: LocalDate,
     val groups: Set<String>
 )
 
@@ -25,8 +25,8 @@ data class LessonUpdate(
     val dayOfWeek: DayOfWeek,
     val startTime: LocalTime,
     val durationHours: UInt,
-    val startDate: LocalDate,
     val durationWeeks: UInt,
+    val startDate: LocalDate,
     val groups: Set<String>
 )
 
@@ -36,7 +36,7 @@ data class LessonCreate(
     val dayOfWeek: DayOfWeek,
     val startTime: LocalTime,
     val durationHours: UInt,
-    val startDate: LocalDate,
     val durationWeeks: UInt,
+    val startDate: LocalDate,
     val groups: Set<String>
 )

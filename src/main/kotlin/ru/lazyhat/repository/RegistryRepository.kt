@@ -34,14 +34,15 @@ class RegistryRepositoryImpl(
             )
         )
 
-    override suspend fun upsertListRecords(update: RegistryRecordUpdate): Boolean = registryService.upsertOrDelete(update)
+    override suspend fun upsertListRecords(update: RegistryRecordUpdate): Boolean =
+        registryService.upsertOrDelete(update)
 
     override suspend fun getAttendanceByLesson(lessonId: UInt): LessonAttendance {
         val lesson = lessonsService.findById(lessonId)
         val listDates = lesson?.let { lessonEntry ->
             val plus = (lessonEntry.dayOfWeek.ordinal - lessonEntry.startDate.dayOfWeek.ordinal).let {
                 if (it < 0)
-                    it+7
+                    it + 7
                 else
                     it
             }
@@ -52,16 +53,23 @@ class RegistryRepositoryImpl(
         } ?: listOf()
         val groups = lesson?.groups?.map { it to studentsService.findByGroup(it) }
         val studentAttendances = registryService.findByLesson(lessonId).groupBy { it.student }
-        val la = LessonAttendance(lessonId, groups?.map {
+        val la = LessonAttendance(lessonId, groups?.map { group ->
             LessonAttendance.GroupAttendance(
-                it.first, it.second.map {
+                group.first, group.second.map { student ->
                     LessonAttendance.GroupAttendance.StudentAttendance(
-                        it,
-                        studentAttendances[it.username].let {
-                            val map = it?.associate { it.date to it.status }.orEmpty().toMutableMap()
-                            listDates.forEach { map.getOrPut(it) { AttendanceStatus.Missing } }
-                            map
-                        }.toSortedMap()
+                        student,
+                        studentAttendances[student.username].let { studentA ->
+                            studentA
+                            ?.associate { it.date to it.status }
+                            .orEmpty()
+                            .toMutableMap()
+                            .also { map ->
+                                listDates.forEach { date ->
+                                    map.getOrPut(date) { AttendanceStatus.Missing }
+                                }
+                            }
+                            .toSortedMap()
+                        }
                     )
                 }
             )

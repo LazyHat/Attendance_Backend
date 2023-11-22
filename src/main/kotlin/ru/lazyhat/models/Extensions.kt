@@ -17,7 +17,7 @@ operator fun LocalDateTime.plus(duration: Duration): LocalDateTime =
     this.toInstant(TimeZone.currentSystemDefault()).plus(duration).toLocalDateTime(TimeZone.currentSystemDefault())
 
 fun LessonCreate.toLessonUpdate(username: String) = LessonUpdate(
-    username, title, dayOfWeek, startTime, durationHours, startDate, durationWeeks, groups
+    username, title, dayOfWeek, startTime, durationHours, durationWeeks, startDate, groups
 )
 
 fun LocalDateTime.Companion.now(): LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())

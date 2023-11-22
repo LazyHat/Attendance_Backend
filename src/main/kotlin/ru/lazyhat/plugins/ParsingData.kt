@@ -44,48 +44,12 @@ fun Application.configureParsingData() {
             adminRepository.createLesson(
                 LessonUpdate(
                     "lazy",
-                    "English",
-                    DayOfWeek.WEDNESDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    LocalDate(2023, 9, 1),
-                    9U,
-                    setOf("2091", "2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "Infomatic",
-                    DayOfWeek.WEDNESDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    LocalDate(2023, 9, 1),
-                    9U,
-                    setOf("2091", "2092", "2093")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.WEDNESDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    LocalDate(2023, 9, 1),
-                    9U,
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
                     "WEB",
                     DayOfWeek.MONDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
                     setOf("2092")
                 )
             )
@@ -96,8 +60,20 @@ fun Application.configureParsingData() {
                     DayOfWeek.TUESDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
+                    setOf("2092")
+                )
+            )
+            adminRepository.createLesson(
+                LessonUpdate(
+                    "lazy",
+                    "WEB",
+                    DayOfWeek.WEDNESDAY,
+                    LocalTime(0, 0),
+                    23U,
+                    10U,
+                    LocalDate(2023, 9, 1),
                     setOf("2092")
                 )
             )
@@ -108,8 +84,8 @@ fun Application.configureParsingData() {
                     DayOfWeek.THURSDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
                     setOf("2092")
                 )
             )
@@ -120,8 +96,8 @@ fun Application.configureParsingData() {
                     DayOfWeek.FRIDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
                     setOf("2092")
                 )
             )
@@ -132,8 +108,8 @@ fun Application.configureParsingData() {
                     DayOfWeek.SATURDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
                     setOf("2092")
                 )
             )
@@ -144,8 +120,8 @@ fun Application.configureParsingData() {
                     DayOfWeek.SUNDAY,
                     LocalTime(0, 0),
                     23U,
+                    10U,
                     LocalDate(2023, 9, 1),
-                    9U,
                     setOf("2092")
                 )
             )

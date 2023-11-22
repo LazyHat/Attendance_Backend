@@ -35,8 +35,8 @@ class LessonsServiceImpl(database: Database) : LessonsService {
         val dayOfWeek = enumeration<DayOfWeek>("day_of_week")
         val startTime = time("start_time")
         val durationHours = uinteger("duration_hours")
-        val startDate = date("start_date")
         val durationWeeks = uinteger("duration_weeks")
+        val startDate = date("start_date")
         val groups = varchar("groups", Constants.Length.groupsList)
     }
 
@@ -90,8 +90,8 @@ class LessonsServiceImpl(database: Database) : LessonsService {
         this[Lessons.dayOfWeek] = lesson.dayOfWeek
         this[Lessons.startTime] = lesson.startTime
         this[Lessons.durationHours] = lesson.durationHours
-        this[Lessons.startDate] = lesson.startDate
         this[Lessons.durationWeeks] = lesson.durationWeeks
+        this[Lessons.startDate] = lesson.startDate
         this[Lessons.groups] = Json.encodeToString(lesson.groups)
     }
 
@@ -103,8 +103,8 @@ class LessonsServiceImpl(database: Database) : LessonsService {
             it[Lessons.dayOfWeek],
             it[Lessons.startTime],
             it[Lessons.durationHours],
-            it[Lessons.startDate],
             it[Lessons.durationWeeks],
+            it[Lessons.startDate],
             Json.decodeFromString(it[Lessons.groups])
         )
     }
@@ -115,8 +115,8 @@ class LessonsServiceImpl(database: Database) : LessonsService {
         dayOfWeek,
         startTime,
         durationHours,
-        startDate,
         durationWeeks,
+        startDate,
         groups
     )
 }

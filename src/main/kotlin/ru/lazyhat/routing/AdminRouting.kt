@@ -8,6 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import ru.lazyhat.models.Credentials
+import ru.lazyhat.models.LessonUpdate
 import ru.lazyhat.repository.AdminRepository
 
 fun Route.adminRouting() {
@@ -49,6 +50,11 @@ fun Route.adminRouting() {
                         call.parameters["id"]?.toUIntOrNull()?.let {
                             call.respond(adminRepository.getLessonAttendance(it))
                         } ?: call.respond(HttpStatusCode.BadRequest)
+                    }
+                    patch {
+                        call.receive<LessonUpdate>().let {
+                            adminRepository.
+                        }
                     }
                 }
             }
