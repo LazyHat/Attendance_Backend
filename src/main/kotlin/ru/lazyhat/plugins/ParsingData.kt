@@ -10,16 +10,12 @@ import io.ktor.server.application.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.koin.ktor.ext.inject
-import ru.lazyhat.models.LessonUpdate
 import ru.lazyhat.models.StudentCreate
 import ru.lazyhat.models.Teacher
 import ru.lazyhat.repository.AdminRepository
-import java.time.DayOfWeek
 
 fun Application.configureParsingData() {
     val adminRepository by inject<AdminRepository>()
@@ -38,92 +34,6 @@ fun Application.configureParsingData() {
                 parseStudentsByGroup(client, "2091") +
                         parseStudentsByGroup(client, "2092") +
                         parseStudentsByGroup(client, "2093")
-            )
-        }
-        if (adminRepository.getAllLessons().isEmpty()) {
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.MONDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.TUESDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.WEDNESDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.THURSDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.FRIDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.SATURDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
-            )
-            adminRepository.createLesson(
-                LessonUpdate(
-                    "lazy",
-                    "WEB",
-                    DayOfWeek.SUNDAY,
-                    LocalTime(0, 0),
-                    23U,
-                    10U,
-                    LocalDate(2023, 9, 1),
-                    setOf("2092")
-                )
             )
         }
     }
