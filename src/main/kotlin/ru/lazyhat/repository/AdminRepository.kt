@@ -19,6 +19,7 @@ interface AdminRepository {
     suspend fun getAllStudents(): List<Student>
     suspend fun createStudent(form: StudentCreate): Boolean
     suspend fun deleteStudent(username: String): Boolean
+    suspend fun deleteTeacher(username: String): Boolean
     suspend fun putSomeStudents(students: List<StudentCreate>): Boolean
 }
 
@@ -46,5 +47,6 @@ class AdminRepositoryImpl(
     override suspend fun getAllStudents(): List<Student> = studentsService.getAll()
     override suspend fun createStudent(form: StudentCreate): Boolean = studentsService.insert(form)
     override suspend fun deleteStudent(username: String): Boolean = studentsService.delete(username)
+    override suspend fun deleteTeacher(username: String): Boolean = teachersService.delete(username)
     override suspend fun putSomeStudents(students: List<StudentCreate>): Boolean = studentsService.insertList(students)
 }
