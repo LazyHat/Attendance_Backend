@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import ru.lazyhat.models.Access
 import ru.lazyhat.models.StudentCreate
-import ru.lazyhat.models.Teacher
+import ru.lazyhat.models.TeacherCreate
 import ru.lazyhat.repository.UsersRepository
 
 fun Route.guestRouting() {
@@ -40,7 +40,7 @@ fun Route.guestRouting() {
     }
     route("teacher") {
         post("register") {
-            val form: Teacher = call.receive()
+            val form: TeacherCreate = call.receive()
             userRepository.registerTeacher(form).let {
                 call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.Conflict)
             }
