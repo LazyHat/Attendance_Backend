@@ -14,7 +14,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.koin.ktor.ext.inject
 import ru.lazyhat.models.StudentCreate
-import ru.lazyhat.models.Teacher
+import ru.lazyhat.models.TeacherCreate
 import ru.lazyhat.repository.AdminRepository
 
 fun Application.configureParsingData() {
@@ -28,7 +28,7 @@ fun Application.configureParsingData() {
 
     scope.launch {
         if (adminRepository.getAllTeachers().isEmpty())
-            adminRepository.createTeacher(Teacher("lazy", "LazyHat", "pass"))
+            adminRepository.createTeacher(TeacherCreate("lazy", "LazyHat", "pass"))
         if (adminRepository.getAllStudents().isEmpty()) {
             adminRepository.putSomeStudents(
                 parseStudentsByGroup(client, "2091") +
