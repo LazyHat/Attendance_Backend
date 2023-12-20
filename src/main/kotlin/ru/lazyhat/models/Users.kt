@@ -32,3 +32,10 @@ data class Teacher(
     val fullName: String,
     val password: String
 )
+
+@Serializable
+data class TeacherCreate(
+    val username: String,
+    val fullName: String,
+    val password: String
+)

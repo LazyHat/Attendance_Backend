@@ -10,10 +10,11 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.lazyhat.Constants
 import ru.lazyhat.models.Teacher
+import ru.lazyhat.models.TeacherCreate
 
 
 interface TeachersService {
-    suspend fun create(form: Teacher): Boolean
+    suspend fun create(form: TeacherCreate): Boolean
     suspend fun getAll(): List<Teacher>
     suspend fun find(username: String): Teacher?
     suspend fun update(username: String, new: (old: Teacher) -> Teacher): Boolean
@@ -39,6 +40,12 @@ class TeachersServiceImpl(database: Database) : TeachersService {
         this[Teachers.password]
     )
 
+    private fun UpdateBuilder<Int>.applyTeacher(teacherCreate: TeacherCreate) = this.apply {
+        this[Teachers.id] = teacherCreate.username
+        this[Teachers.fullName] = teacherCreate.fullName
+        this[Teachers.password] = teacherCreate.password
+    }
+
     private fun UpdateBuilder<Int>.applyTeacher(teacher: Teacher) = this.apply {
         this[Teachers.id] = teacher.username
         this[Teachers.fullName] = teacher.fullName
@@ -48,7 +55,7 @@ class TeachersServiceImpl(database: Database) : TeachersService {
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    override suspend fun create(form: Teacher): Boolean =
+    override suspend fun create(form: TeacherCreate): Boolean =
         dbQuery {
             Teachers.insert {
                 it.applyTeacher(form)

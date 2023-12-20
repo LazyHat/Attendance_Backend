@@ -15,7 +15,7 @@ interface AdminRepository {
     suspend fun updateLesson(lessonId: UInt, lessonUpdate: LessonUpdate): Boolean
     suspend fun getLessonAttendance(id: UInt): LessonAttendance
     suspend fun getAllTeachers(): List<Teacher>
-    suspend fun createTeacher(teacher: Teacher): Boolean
+    suspend fun createTeacher(form: TeacherCreate): Boolean
     suspend fun getAllStudents(): List<Student>
     suspend fun createStudent(form: StudentCreate): Boolean
     suspend fun deleteStudent(username: String): Boolean
@@ -43,7 +43,7 @@ class AdminRepositoryImpl(
 
     override suspend fun getLessonAttendance(id: UInt): LessonAttendance = registryRepository.getAttendanceByLesson(id)
     override suspend fun getAllTeachers(): List<Teacher> = teachersService.getAll()
-    override suspend fun createTeacher(teacher: Teacher): Boolean = teachersService.create(teacher)
+    override suspend fun createTeacher(form: TeacherCreate): Boolean = teachersService.create(form)
     override suspend fun getAllStudents(): List<Student> = studentsService.getAll()
     override suspend fun createStudent(form: StudentCreate): Boolean = studentsService.insert(form)
     override suspend fun deleteStudent(username: String): Boolean = studentsService.delete(username)

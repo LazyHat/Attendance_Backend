@@ -88,6 +88,11 @@ fun Route.adminRouting() {
                             }
                         } ?: call.respond(HttpStatusCode.BadRequest)
                     }
+                    post {
+                        adminRepository.createTeacher(call.receive()).let {
+                            call.respond(if (it) HttpStatusCode.Created else HttpStatusCode.BadRequest)
+                        }
+                    }
                 }
             }
         }
